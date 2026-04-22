@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
           })
       }
 
-      const appUrl = 'https://kicknote-templates.vercel.app'
+      const appUrl = 'https://templates.kicknote.fr'
       await resend.emails.send({
         from: 'Kicknote <noreply@kicknote.fr>',
         to: email,
