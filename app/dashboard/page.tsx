@@ -168,6 +168,11 @@ export default function Dashboard() {
         )}
 
       </div>
+      <div style={{ textAlign: 'center' as const, padding: '20px 0' }}>
+        <span onClick={() => window.location.href = '/cgu'} style={{ color: '#8890AA', fontSize: '11px', cursor: 'pointer', textDecoration: 'underline' }}>
+          CGU & Politique de confidentialité
+        </span>
+      </div>
     </main>
   )
 }
