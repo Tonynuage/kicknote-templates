@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
+export const dynamic = 'force-dynamic'
+
 export default function Dashboard() {
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -59,7 +61,6 @@ export default function Dashboard() {
 
   return (
     <main style={{ minHeight: '100vh', background: '#070910', fontFamily: 'Arial, sans-serif', paddingBottom: '40px' }}>
-      {/* Nav */}
       <nav style={{ background: '#0D1018', borderBottom: '1px solid #ffffff11', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h1 style={{ fontFamily: 'Georgia, serif', color: '#34D399', fontSize: '20px', margin: 0 }}>
           Kick<span style={{ color: '#FFFFFF' }}>note</span>
@@ -70,7 +71,6 @@ export default function Dashboard() {
 
       <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px' }}>
 
-        {/* Crédits */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '20px' }}>
           <div style={{ background: '#1A1F2E', borderRadius: '10px', padding: '14px', border: '1px solid #ffffff11' }}>
             <p style={{ color: '#34D399', fontSize: '28px', fontWeight: '500', margin: '0 0 4px', fontFamily: 'Georgia, serif' }}>
@@ -92,13 +92,12 @@ export default function Dashboard() {
           </div>
           <div style={{ background: '#1A1F2E', borderRadius: '10px', padding: '14px', border: '1px solid #ffffff11' }}>
             <p style={{ color: '#F0F2F8', fontSize: '15px', fontWeight: '500', margin: '0 0 4px' }}>
-              {credits?.pack || '—'}
+              {credits?.pack || 'Aucun pack'}
             </p>
             <p style={{ color: '#8890AA', fontSize: '11px', margin: 0 }}>Offre actuelle</p>
           </div>
         </div>
 
-        {/* Banner achat */}
         {(!credits || credits.credits_restants === 0) && (
           <div style={{ background: '#1A1F2E', borderRadius: '10px', padding: '14px', border: '1px solid #34D39933', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
             <div>
@@ -111,10 +110,8 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Templates */}
         <p style={{ color: '#8890AA', fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', margin: '0 0 12px' }}>Choisir un template</p>
 
-        {/* Couleur */}
         <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', alignItems: 'center' }}>
           <p style={{ color: '#8890AA', fontSize: '12px', margin: 0 }}>Couleur :</p>
           {couleurs.map(c => (
@@ -151,7 +148,6 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Historique */}
         {rapports.length > 0 && (
           <>
             <p style={{ color: '#8890AA', fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', margin: '0 0 12px' }}>Mes rapports générés</p>
