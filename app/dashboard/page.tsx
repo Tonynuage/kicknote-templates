@@ -15,11 +15,9 @@ export default function Dashboard() {
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      console.log('SESSION:', session)
       if (!session) { router.push('/'); return }
       const userEmail = session.user.email!
       setEmail(userEmail)
-      console.log('EMAIL:', userEmail)
 
       const { data: cred } = await supabase
         .from('kicknote_credits')
