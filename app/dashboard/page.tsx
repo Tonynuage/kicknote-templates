@@ -104,9 +104,11 @@ export default function Dashboard() {
               <p style={{ color: '#F0F2F8', fontSize: '13px', margin: '0 0 3px' }}>Pack 10 rapports — 9€</p>
               <p style={{ color: '#8890AA', fontSize: '11px', margin: 0 }}>Soit 0,90€ par rapport · Sans abonnement</p>
             </div>
-            <a href="https://kicknote.fr" style={{ fontSize: '12px', padding: '8px 16px', borderRadius: '8px', border: '1px solid #34D399', background: 'transparent', color: '#34D399', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-              Acheter un pack
-            </a>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' as const }}>
+              <a href="https://buy.stripe.com/4gMdR80yT6Wq9FL4TZ5ZC08" style={{ fontSize: '11px', padding: '6px 12px', borderRadius: '6px', border: '1px solid #34D399', background: 'transparent', color: '#34D399', textDecoration: 'none' }}>7€ · 10 crédits</a>
+              <a href="https://buy.stripe.com/8x25kC95p6Wq2dj7275ZC09" style={{ fontSize: '11px', padding: '6px 12px', borderRadius: '6px', border: '1px solid #34D399', background: '#34D39911', color: '#34D399', textDecoration: 'none' }}>15€ · 25 crédits</a>
+              <a href="https://buy.stripe.com/fZu7sK6Xh6Wq6tzdqv5ZC0a" style={{ fontSize: '11px', padding: '6px 12px', borderRadius: '6px', border: '1px solid #34D399', background: 'transparent', color: '#34D399', textDecoration: 'none' }}>29€ · 60 crédits</a>
+            </div>
           </div>
         )}
 
