@@ -12,7 +12,7 @@ export default function Home() {
     setLoading(true)
     await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: "https://kicknote-templates.vercel.app/auth/callback" }
+      options: { emailRedirectTo: "https://templates.kicknote.fr/auth/callback" }
     })
     setSent(true)
     setLoading(false)
