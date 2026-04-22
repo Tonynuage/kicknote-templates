@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rapport Recrutement / Scouting</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEEEF2;--bg2:#E4E5EA;--surf:#FFFFFF;--surf2:#F5F6F9;
+  --bord:rgba(0,0,0,0.07);--bord2:rgba(0,0,0,0.13);
+  --txt:#131520;--txt2:#525870;--txt3:#979DB8;
+  --acc:#059669;--acc2:#047857;--acc3:#ECFDF5;--acc4:#A7F3D0;
+  --gold:#D97706;--neg:#B91C1C;--blue:#0891B2;
+  --rec:#059669;--obs:#D97706;--eca:#B91C1C;
+  --shad:0 1px 2px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.05);
+  --shad2:0 2px 8px rgba(0,0,0,0.08),0 8px 32px rgba(0,0,0,0.07);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.65;-webkit-font-smoothing:antialiased}
+@media print{
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .no-print{display:none!important}
+  body{background:#fff}
+  .cover-page{display:flex!important;page-break-after:always;min-height:100vh}
+  .tcontent{display:block!important;margin-bottom:28px;page-break-inside:avoid}
+  .tabs,.fab-wrap{display:none!important}
+  .card{box-shadow:none;border:1px solid #ddd}
+  @page{margin:16mm 14mm}
+}
+.page{max-width:1160px;margin:0 auto;padding:0 24px 100px}
+.card{background:var(--surf);border-radius:14px;border:1px solid var(--bord);box-shadow:var(--shad)}
+
+/* ══ COUVERTURE ══ */
+.cover-page{display:none;flex-direction:column;min-height:100vh;background:#020F09;color:#fff;overflow:hidden}
+.cover-pitch-zone{position:relative;height:50vh;flex-shrink:0;overflow:hidden}
+.cover-pitch-zone svg{width:100%;height:100%}
+.cover-body{flex:1;padding:28px 52px 32px;display:flex;flex-direction:column;justify-content:space-between}
+.cover-tag{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.28);margin-bottom:16px}
+.cover-player-row{display:flex;align-items:center;gap:22px;margin-bottom:18px}
+.cover-photo{width:84px;height:84px;border-radius:50%;border:2px solid rgba(5,150,105,0.4);background:rgba(5,150,105,0.1);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;cursor:pointer;flex-shrink:0;transition:border-color .2s}
+.cover-photo:hover{border-color:#34D399}
+.cover-photo img{width:100%;height:100%;object-fit:cover}
+.cover-photo .hint{font-size:9px;color:rgba(255,255,255,.28);text-align:center;line-height:1.3}
+.cover-photo input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.cover-player-info{flex:1}
+.cover-player-name{font-family:'Syne',sans-serif;font-size:38px;font-weight:800;color:#fff;line-height:1;background:transparent;border:none;outline:none;width:100%;border-bottom:1px dashed rgba(255,255,255,0.15);padding-bottom:4px;transition:border-color .2s}
+.cover-player-name:focus{border-bottom-color:#34D399}
+.cover-player-sub{font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,255,255,0.45);margin-top:6px;background:transparent;border:none;outline:none;width:100%;border-bottom:1px dashed rgba(255,255,255,0.1);padding-bottom:2px}
+.cover-rec-badge{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:8px 18px;border-radius:8px;flex-shrink:0}
+.cover-rec-badge.rec{background:rgba(5,150,105,0.25);border:1px solid rgba(52,211,153,0.35);color:#6EE7B7}
+.cover-rec-badge.obs{background:rgba(217,119,6,0.2);border:1px solid rgba(217,119,6,0.4);color:#FCD34D}
+.cover-rec-badge.eca{background:rgba(185,28,28,0.2);border:1px solid rgba(185,28,28,0.4);color:#FCA5A5}
+.cover-divider{height:1px;background:rgba(255,255,255,0.08);margin:14px 0}
+.cover-meta{display:flex;gap:28px;flex-wrap:wrap}
+.cover-meta-item{display:flex;flex-direction:column;gap:3px}
+.cover-meta-label{font-family:'Syne',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.25)}
+.cover-meta-val{font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,255,255,0.7);background:transparent;border:none;outline:none;border-bottom:1px dashed rgba(255,255,255,0.12);padding-bottom:2px;transition:border-color .2s}
+.cover-meta-val:focus{border-bottom-color:#34D399}
+.cover-bottom{display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.07);padding-top:14px}
+.cover-analyst{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);background:transparent;border:none;outline:none}
+.cover-analyst:focus{color:rgba(255,255,255,0.7)}
+.cover-acc-line{width:28px;height:2px;background:#34D399;border-radius:1px}
+.cover-date-print{font-size:11px;color:rgba(255,255,255,0.2);font-family:'DM Mono',monospace}
+.cover-preview{background:#020F09;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);box-shadow:0 4px 24px rgba(0,0,0,0.25);margin-bottom:20px}
+.cover-preview .cover-pitch-zone{height:190px}
+.cover-preview .cover-body{padding:16px 22px 16px}
+
+/* ══ HEADER ══ */
+.header{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:20px;padding:32px 0 24px;margin-bottom:20px}
+.player-photo-wrap{width:76px;height:76px;border-radius:50%;border:2px solid var(--bord2);background:var(--surf2);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;flex-shrink:0;position:relative;transition:border-color .2s}
+.player-photo-wrap:hover{border-color:var(--acc)}
+.player-photo-wrap img{width:100%;height:100%;object-fit:cover}
+.player-photo-wrap .hint{font-size:10px;color:var(--txt3);text-align:center;line-height:1.3;padding:6px}
+.player-photo-wrap input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.player-name{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;background:transparent;border:none;outline:none;color:var(--txt);width:100%;border-bottom:1px dashed transparent;transition:border-color .2s}
+.player-name:focus{border-bottom-color:var(--acc)}
+.player-sub{font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px;background:transparent;border:none;outline:none;width:100%;font-family:'Syne',sans-serif;font-weight:500;border-bottom:1px dashed transparent;transition:border-color .2s}
+.player-sub:focus{border-bottom-color:var(--acc)}
+/* Décision badge header */
+.decision-wrap{text-align:right}
+.decision-select-wrap{display:inline-flex;flex-direction:column;align-items:flex-end;gap:6px}
+.decision-badge{display:inline-block;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:9px 20px;border-radius:10px;cursor:pointer;border:none;transition:all .2s}
+.decision-badge.rec{background:rgba(5,150,105,0.12);color:var(--acc);border:1.5px solid rgba(5,150,105,0.25)}
+.decision-badge.obs{background:rgba(217,119,6,0.1);color:var(--gold);border:1.5px solid rgba(217,119,6,0.25)}
+.decision-badge.eca{background:rgba(185,28,28,0.08);color:var(--neg);border:1.5px solid rgba(185,28,28,0.2)}
+.decision-select{background:var(--surf2);border:1px solid var(--bord2);border-radius:8px;padding:6px 12px;font-family:'Syne',sans-serif;font-size:11px;font-weight:600;color:var(--txt2);outline:none;cursor:pointer;width:100%;transition:border-color .2s}
+.decision-select:focus{border-color:var(--acc)}
+.scout-ctx{font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px;text-align:right;background:transparent;border:none;outline:none;font-family:'Syne',sans-serif;font-weight:500;width:220px;border-bottom:1px dashed transparent;transition:border-color .2s;display:block;margin-left:auto}
+.scout-ctx:focus{border-bottom-color:var(--acc)}
+
+/* ══ TABS ══ */
+.tabs{display:flex;gap:3px;background:var(--surf);border-radius:12px;padding:4px;margin-bottom:20px;border:1px solid var(--bord);box-shadow:var(--shad)}
+.tbtn{flex:1;padding:8px 6px;border:none;background:transparent;color:var(--txt2);font-family:'Syne',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.5px;cursor:pointer;border-radius:9px;transition:all .18s;text-transform:uppercase;white-space:nowrap}
+.tbtn.on{background:var(--acc);color:#fff}
+.tcontent{display:none}
+.tcontent.on{display:block}
+.stitle{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;color:var(--acc);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.stitle::after{content:'';flex:1;height:1px;background:var(--bord2)}
+
+/* ══ IDENTITÉ ══ */
+.identity-grid{display:grid;grid-template-columns:auto 1fr;gap:20px;margin-bottom:20px}
+.id-photo-card{padding:20px;display:flex;flex-direction:column;align-items:center;gap:14px;min-width:180px}
+.id-photo-big{width:130px;height:130px;border-radius:50%;border:3px solid var(--acc4);background:var(--surf2);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;cursor:pointer;transition:border-color .2s}
+.id-photo-big:hover{border-color:var(--acc)}
+.id-photo-big img{width:100%;height:100%;object-fit:cover}
+.id-photo-big .hint{font-size:11px;color:var(--txt3);text-align:center;line-height:1.5}
+.id-photo-big input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.id-pos-badge{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--acc);background:var(--acc3);padding:5px 14px;border-radius:20px;border:1px solid rgba(5,150,105,0.2)}
+.id-num-card{background:var(--surf2);border:1px solid var(--bord);border-radius:12px;padding:8px 18px;text-align:center}
+.id-num-val{font-family:'Syne',sans-serif;font-size:40px;font-weight:800;color:var(--acc);line-height:1;letter-spacing:-1px}
+.id-num-lbl{font-family:'Syne',sans-serif;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--txt3);margin-top:2px}
+.id-fields{padding:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;align-content:start}
+.id-field label{display:block;font-family:'Syne',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--txt3);margin-bottom:5px}
+.id-field input,.id-field select{width:100%;background:var(--surf2);border:1px solid var(--bord);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--txt);outline:none;transition:border-color .2s;min-height:40px}
+.id-field input:focus,.id-field select:focus{border-color:var(--acc)}
+
+/* ══ PROFIL TACTIQUE ══ */
+.profil-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.profil-card{padding:18px}
+.profil-card h5{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--txt3);margin-bottom:12px}
+.profil-card h5 em{color:var(--acc);font-style:normal;margin-right:5px}
+.profil-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.p-tag{padding:5px 12px;border-radius:20px;font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border:1.5px solid var(--bord2);background:var(--surf2);color:var(--txt2);transition:all .15s}
+.p-tag.on{background:var(--acc3);border-color:rgba(5,150,105,.3);color:var(--acc)}
+.p-tag.req{background:var(--acc);border-color:var(--acc);color:#fff}
+.profil-card textarea{width:100%;background:transparent;border:none;resize:none;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.7;min-height:70px;outline:none}
+.profil-card textarea::placeholder{color:var(--txt3)}
+
+/* ══ CRITÈRES RECRUTEMENT ══ */
+.crit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.crit-card{padding:16px;border-top:3px solid var(--acc)}
+.crit-card.phy{border-top-color:#0891B2}
+.crit-card.men{border-top-color:#D97706}
+.crit-title{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:12px}
+.crit-card .crit-title{color:var(--acc)}
+.crit-card.phy .crit-title{color:#0891B2}
+.crit-card.men .crit-title{color:#D97706}
+.crit-item{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.crit-item label{flex:1;font-size:12px;color:var(--txt2);font-family:'DM Sans',sans-serif}
+.crit-stars{display:flex;gap:3px}
+.crit-star{font-size:14px;cursor:pointer;color:var(--bord2);transition:color .1s;background:none;border:none;padding:0;line-height:1}
+.crit-star.on{color:var(--gold)}
+.crit-item .req-badge{font-family:'Syne',sans-serif;font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:10px;background:var(--acc3);color:var(--acc);border:1px solid rgba(5,150,105,.2);cursor:pointer;transition:all .15s;flex-shrink:0}
+.crit-item .req-badge.on{background:var(--acc);color:#fff}
+
+/* ══ RADAR ══ */
+.radar-wrap{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.radar-card{padding:24px;display:flex;flex-direction:column;align-items:center;gap:20px}
+.radar-svg-wrap{width:100%;max-width:300px}
+.radar-controls{width:100%;display:flex;flex-direction:column;gap:10px}
+.radar-ctrl{display:flex;align-items:center;gap:10px}
+.radar-ctrl-label{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--txt2);width:120px;flex-shrink:0}
+.radar-ctrl-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--acc);width:28px;text-align:right;flex-shrink:0}
+input[type=range].rslider{-webkit-appearance:none;appearance:none;flex:1;height:5px;background:var(--bg2);border-radius:3px;outline:none;cursor:pointer}
+input[type=range].rslider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--acc);cursor:pointer}
+
+/* ══ CONTRAT / MARCHÉ ══ */
+.market-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.market-card{padding:18px;text-align:center}
+.market-lbl{font-family:'Syne',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--txt3);margin-bottom:8px}
+.market-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--acc);margin-bottom:4px}
+.market-input{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--acc);background:transparent;border:none;outline:none;width:100%;text-align:center;border-bottom:1px dashed rgba(5,150,105,.3);transition:border-color .2s}
+.market-input:focus{border-bottom-color:var(--acc)}
+.market-sub{font-size:11px;color:var(--txt3);font-family:'DM Sans',sans-serif}
+.market-sub input{background:transparent;border:none;outline:none;width:100%;text-align:center;color:var(--txt2);font-family:'DM Sans',sans-serif;font-size:11px;border-bottom:1px dashed var(--bord2)}
+.ab{padding:18px}
+.ab.full{grid-column:1/-1}
+.ab h5{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--txt3);margin-bottom:10px}
+.ab h5 em{color:var(--acc);font-style:normal;margin-right:5px}
+.ab textarea{width:100%;background:transparent;border:none;resize:vertical;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.7;min-height:80px;outline:none}
+.ab textarea::placeholder{color:var(--txt3)}
+
+/* ══ SUIVI OBSERVATIONS ══ */
+.obs-list{display:flex;flex-direction:column;gap:12px}
+.obs-item{padding:18px;border-left:3px solid var(--acc);border-radius:0 12px 12px 0}
+.obs-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.obs-date input{background:var(--surf2);border:1px solid var(--bord);border-radius:8px;padding:6px 12px;font-family:'DM Mono',monospace;font-size:12px;color:var(--txt);outline:none;width:130px;transition:border-color .2s}
+.obs-date input:focus{border-color:var(--acc)}
+.obs-match input{background:var(--surf2);border:1px solid var(--bord);border-radius:8px;padding:6px 12px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--txt);outline:none;flex:1;min-width:160px;transition:border-color .2s}
+.obs-match input:focus{border-color:var(--acc)}
+.obs-note-wrap{display:flex;align-items:center;gap:6px;margin-left:auto}
+.obs-note-lbl{font-family:'Syne',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt3)}
+.obs-note-val{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--acc)}
+.obs-note-input{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--acc);background:transparent;border:none;outline:none;width:44px;text-align:center;border-bottom:1px dashed rgba(5,150,105,.3)}
+.obs-note-input:focus{border-bottom-color:var(--acc)}
+.obs-body{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.obs-field label{display:block;font-family:'Syne',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--txt3);margin-bottom:5px}
+.obs-field textarea{width:100%;background:var(--surf2);border:1px solid var(--bord);border-radius:8px;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--txt);outline:none;resize:none;min-height:70px;line-height:1.6;transition:border-color .2s}
+.obs-field textarea:focus{border-color:var(--acc)}
+.obs-field textarea::placeholder{color:var(--txt3)}
+.add-obs-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;background:transparent;border:1px dashed var(--bord2);color:var(--txt3);border-radius:12px;cursor:pointer;font-family:'Syne',sans-serif;font-size:11px;font-weight:600;transition:all .2s;width:100%;margin-top:12px}
+.add-obs-btn:hover{border-color:var(--acc);color:var(--acc)}
+
+/* ══ COMPARATIF ══ */
+.comp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.comp-player-card{padding:16px;border-top:3px solid var(--bord2);transition:border-top-color .2s}
+.comp-player-card.active{border-top-color:var(--acc)}
+.comp-photo{width:56px;height:56px;border-radius:50%;border:2px solid var(--bord2);background:var(--surf2);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;cursor:pointer;margin:0 auto 10px;transition:border-color .2s}
+.comp-photo:hover{border-color:var(--acc)}
+.comp-photo img{width:100%;height:100%;object-fit:cover}
+.comp-photo .hint{font-size:9px;color:var(--txt3);text-align:center}
+.comp-photo input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.comp-name input{width:100%;background:transparent;border:none;border-bottom:1px dashed var(--bord2);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--txt);outline:none;text-align:center;padding:3px 0;margin-bottom:8px;transition:border-color .2s}
+.comp-name input:focus{border-bottom-color:var(--acc)}
+.comp-bars{display:flex;flex-direction:column;gap:7px}
+.comp-row{display:flex;align-items:center;gap:8px}
+.comp-lbl{font-family:'Syne',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--txt3);width:60px;flex-shrink:0}
+.comp-bar-bg{flex:1;height:5px;background:var(--bg2);border-radius:3px;overflow:hidden}
+.comp-bar-fill{height:100%;border-radius:3px;transition:width .3s}
+.comp-val-txt{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;width:24px;text-align:right;flex-shrink:0}
+
+/* ══ DÉCISION FINALE ══ */
+.decision-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.dec-card{padding:24px;text-align:center;border-radius:14px;border:2px solid var(--bord2);cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.dec-card.rec-card:hover,.dec-card.rec-card.sel{border-color:var(--rec);background:rgba(5,150,105,0.05)}
+.dec-card.obs-card:hover,.dec-card.obs-card.sel{border-color:var(--obs);background:rgba(217,119,6,0.05)}
+.dec-card.eca-card:hover,.dec-card.eca-card.sel{border-color:var(--eca);background:rgba(185,28,28,0.05)}
+.dec-icon{font-size:32px;margin-bottom:12px;line-height:1}
+.dec-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.rec-card .dec-title{color:var(--rec)}
+.obs-card .dec-title{color:var(--obs)}
+.eca-card .dec-title{color:var(--eca)}
+.dec-sub{font-size:12px;color:var(--txt3);line-height:1.4}
+.dec-check{position:absolute;top:12px;right:12px;width:20px;height:20px;border-radius:50%;display:none;align-items:center;justify-content:center;font-size:11px;color:#fff}
+.rec-card.sel .dec-check{display:flex;background:var(--rec)}
+.obs-card.sel .dec-check{display:flex;background:var(--obs)}
+.eca-card.sel .dec-check{display:flex;background:var(--eca)}
+.notation-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px}
+.note-card{padding:14px 12px;text-align:center}
+.note-lbl{font-family:'Syne',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--txt3);margin-bottom:8px}
+.note-in{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--acc);background:transparent;border:none;outline:none;width:100%;text-align:center;line-height:1}
+.note-in:focus{color:var(--txt)}
+.pf-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.pf-card{padding:18px;border-radius:12px}
+.pf-card.fort{border-left:3px solid var(--acc)}
+.pf-card.faible{border-left:3px solid var(--neg)}
+.pf-card h5{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:12px}
+.pf-card.fort h5{color:var(--acc)}
+.pf-card.faible h5{color:var(--neg)}
+.pf-item{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.pf-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.fort .pf-dot{background:var(--acc)}
+.faible .pf-dot{background:var(--neg)}
+.pf-item input{background:transparent;border:none;border-bottom:1px dashed var(--bord2);color:var(--txt);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;width:100%;padding:2px 0}
+.pf-item input:focus{border-bottom-color:var(--acc)}
+.add-btn{width:100%;padding:7px;background:transparent;border:1px dashed var(--bord2);color:var(--txt3);border-radius:7px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;margin-top:6px;transition:all .2s}
+.add-btn:hover{border-color:var(--acc);color:var(--acc)}
+
+/* ══ PHOTOS ══ */
+.photos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.photo-card{padding:0;overflow:hidden;border-radius:12px}
+.photo-drop{min-height:140px;background:var(--surf2);border:2px dashed var(--bord2);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:border-color .2s;gap:8px}
+.photo-drop:hover{border-color:var(--acc)}
+.photo-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.photo-preview{width:100%;height:140px;object-fit:cover;display:block;border-radius:10px 10px 0 0}
+.photo-legend{padding:10px 12px}
+.photo-legend input{width:100%;background:transparent;border:none;border-bottom:1px dashed var(--bord2);color:var(--txt);font-family:'DM Sans',sans-serif;font-size:12px;outline:none;padding:4px 0}
+.photo-legend input:focus{border-bottom-color:var(--acc)}
+.add-photo-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:transparent;border:1px dashed var(--bord2);color:var(--txt3);border-radius:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;transition:all .2s;width:100%;margin-top:12px}
+.add-photo-btn:hover{border-color:var(--acc);color:var(--acc)}
+
+/* ══ FOOTER & FAB ══ */
+.rapport-footer{display:flex;align-items:center;justify-content:space-between;padding:22px 0;border-top:1px solid var(--bord2);margin-top:32px}
+.footer-brand{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;color:var(--txt3);text-transform:uppercase}
+.footer-brand span{color:var(--acc)}
+.footer-brand input{background:transparent;border:none;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;color:var(--txt3);outline:none;width:160px;text-transform:uppercase}
+.footer-right{font-family:'DM Mono',monospace;font-size:11px;color:var(--txt3)}
+.fab-wrap{position:fixed;bottom:28px;right:28px;display:flex;flex-direction:column;gap:10px;z-index:500}
+.fab{border:none;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;padding:14px 28px;border-radius:50px;cursor:pointer;transition:transform .15s,box-shadow .15s;text-transform:uppercase;touch-action:manipulation}
+.fab.main{background:var(--acc);color:#fff;box-shadow:0 8px 28px rgba(5,150,105,0.35)}
+.fab.main:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(5,150,105,.45)}
+</style>
+</head>
+<body>
+
+<!-- ══ COUVERTURE ══ -->
+<div class="cover-page" id="coverPage">
+  <div class="cover-pitch-zone">
+    <svg viewBox="0 0 800 380" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <rect width="800" height="380" fill="#020F09"/>
+      <rect x="0" y="0" width="800" height="54" fill="#041810" opacity=".9"/>
+      <rect x="0" y="108" width="800" height="54" fill="#041810" opacity=".9"/>
+      <rect x="0" y="216" width="800" height="54" fill="#041810" opacity=".9"/>
+      <rect x="0" y="324" width="800" height="54" fill="#041810" opacity=".9"/>
+      <rect x="20" y="16" width="760" height="348" fill="none" stroke="rgba(5,150,105,.2)" stroke-width="1.5"/>
+      <line x1="20" y1="190" x2="780" y2="190" stroke="rgba(5,150,105,.15)" stroke-width="1"/>
+      <circle cx="400" cy="190" r="64" fill="none" stroke="rgba(5,150,105,.15)" stroke-width="1"/>
+      <circle cx="400" cy="190" r="4" fill="rgba(52,211,153,.35)"/>
+      <rect x="240" y="16" width="320" height="82" fill="none" stroke="rgba(5,150,105,.15)" stroke-width="1"/>
+      <rect x="240" y="282" width="320" height="82" fill="none" stroke="rgba(5,150,105,.15)" stroke-width="1"/>
+      <!-- Joueur ciblé — jeton mis en valeur -->
+      <circle cx="400" cy="155" r="24" fill="rgba(5,150,105,0.15)" />
+      <circle cx="400" cy="155" r="20" fill="#059669" opacity=".95"/>
+      <circle cx="400" cy="155" r="20" fill="none" stroke="#fff" stroke-width="2.5"/>
+      <text x="400" y="155" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="11" font-weight="700" font-family="DM Mono,monospace">9</text>
+      <!-- Cercle de focus autour du joueur ciblé -->
+      <circle cx="400" cy="155" r="36" fill="none" stroke="rgba(52,211,153,0.3)" stroke-width="1" stroke-dasharray="4 3"/>
+      <!-- Équipe observée -->
+      <circle cx="180" cy="240" r="14" fill="#0E4D2E" opacity=".8" stroke="rgba(5,150,105,.4)" stroke-width="1"/>
+      <circle cx="310" cy="270" r="14" fill="#0E4D2E" opacity=".8" stroke="rgba(5,150,105,.4)" stroke-width="1"/>
+      <circle cx="490" cy="270" r="14" fill="#0E4D2E" opacity=".8" stroke="rgba(5,150,105,.4)" stroke-width="1"/>
+      <circle cx="620" cy="240" r="14" fill="#0E4D2E" opacity=".8" stroke="rgba(5,150,105,.4)" stroke-width="1"/>
+      <circle cx="270" cy="155" r="14" fill="#0E4D2E" opacity=".8" stroke="rgba(5,150,105,.4)" stroke-width="1"/>
+      <circle cx="530" cy="155" r="14" fill="#0E4D2E" opacity=".8" stroke="rgba(5,150,105,.4)" stroke-width="1"/>
+      <!-- Adversaires -->
+      <circle cx="300" cy="100" r="13" fill="#1F0A0A" opacity=".75" stroke="rgba(185,28,28,.35)" stroke-width="1"/>
+      <circle cx="400" cy="80"  r="13" fill="#1F0A0A" opacity=".75" stroke="rgba(185,28,28,.35)" stroke-width="1"/>
+      <circle cx="500" cy="100" r="13" fill="#1F0A0A" opacity=".75" stroke="rgba(185,28,28,.35)" stroke-width="1"/>
+      <!-- Lignes d'analyse -->
+      <defs>
+        <marker id="aw" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto"><path d="M1 1L7 4L1 7" fill="none" stroke="#34D399" stroke-width="1.5"/></marker>
+        <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#020F09" stop-opacity="0"/><stop offset="100%" stop-color="#020F09" stop-opacity="1"/></linearGradient>
+      </defs>
+      <path d="M400 175 L400 230" stroke="#34D399" stroke-width="1.5" stroke-dasharray="4 3" fill="none" marker-end="url(#aw)" opacity=".7"/>
+      <path d="M420 155 L490 155" stroke="#34D399" stroke-width="1.5" fill="none" marker-end="url(#aw)" opacity=".6"/>
+      <rect x="0" y="260" width="800" height="120" fill="url(#fade)"/>
+    </svg>
+  </div>
+  <div class="cover-body">
+    <div class="cover-tag">Rapport de recrutement · Scouting · Analyse vidéo football</div>
+    <div class="cover-player-row">
+      <div class="cover-photo" id="cvPhoto"><span class="hint">Photo</span><input type="file" accept="image/*" onchange="loadCoverPhoto(this)"></div>
+      <div class="cover-player-info">
+        <input class="cover-player-name" id="cvName" value="NOM DU JOUEUR CIBLÉ">
+        <input class="cover-player-sub" id="cvSub" value="Club · Poste · Nationalité · Âge">
+      </div>
+      <div class="cover-rec-badge rec" id="cvDecBadge">RECRUTER</div>
+    </div>
+    <div class="cover-divider"></div>
+    <div class="cover-meta">
+      <div class="cover-meta-item"><span class="cover-meta-label">Scout</span><input class="cover-meta-val" id="cmScout" placeholder="Prénom NOM" style="width:140px"></div>
+      <div class="cover-meta-item"><span class="cover-meta-label">Club recruteur</span><input class="cover-meta-val" id="cmClub" placeholder="Nom du club" style="width:140px"></div>
+      <div class="cover-meta-item"><span class="cover-meta-label">Date rapport</span><input class="cover-meta-val" id="cmDate" placeholder="JJ/MM/AAAA" style="width:110px"></div>
+      <div class="cover-meta-item"><span class="cover-meta-label">Observations</span><input class="cover-meta-val" id="cmNbObs" placeholder="3 matchs" style="width:90px"></div>
+    </div>
+    <div class="cover-bottom">
+      <input class="cover-analyst" id="cmAnalyst" placeholder="SCOUT · DÉPARTEMENT RECRUTEMENT" style="width:320px">
+      <div class="cover-acc-line"></div>
+      <span class="cover-date-print" id="coverDate"></span>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+<!-- ══ COVER TAB ══ -->
+<div id="tab-cover" class="tcontent" style="display:none">
+  <div class="stitle">Couverture du rapport</div>
+  <div class="cover-preview">
+    <div class="cover-pitch-zone">
+      <svg viewBox="0 0 800 380" preserveAspectRatio="xMidYMid slice">
+        <rect width="800" height="380" fill="#020F09"/>
+        <rect x="0" y="0" width="800" height="54" fill="#041810" opacity=".9"/>
+        <rect x="0" y="108" width="800" height="54" fill="#041810" opacity=".9"/>
+        <rect x="0" y="216" width="800" height="54" fill="#041810" opacity=".9"/>
+        <rect x="20" y="16" width="760" height="348" fill="none" stroke="rgba(5,150,105,.2)" stroke-width="1.5"/>
+        <line x1="20" y1="190" x2="780" y2="190" stroke="rgba(5,150,105,.15)" stroke-width="1"/>
+        <circle cx="400" cy="190" r="64" fill="none" stroke="rgba(5,150,105,.15)" stroke-width="1"/>
+        <circle cx="400" cy="155" r="20" fill="#059669" opacity=".95" stroke="#fff" stroke-width="2.5"/>
+        <circle cx="400" cy="155" r="36" fill="none" stroke="rgba(52,211,153,0.3)" stroke-width="1" stroke-dasharray="4 3"/>
+        <text x="400" y="155" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="11" font-weight="700" font-family="DM Mono,monospace">9</text>
+        <defs><linearGradient id="fade2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#020F09" stop-opacity="0"/><stop offset="100%" stop-color="#020F09" stop-opacity="1"/></linearGradient></defs>
+        <rect x="0" y="260" width="800" height="120" fill="url(#fade2)"/>
+      </svg>
+    </div>
+    <div class="cover-body">
+      <div class="cover-tag">Rapport de recrutement · Scouting</div>
+      <div class="cover-player-row">
+        <div class="cover-photo" id="cvPhotoP" style="width:60px;height:60px"><span class="hint" style="font-size:8px">Photo</span></div>
+        <div class="cover-player-info">
+          <div id="cvNameP" style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:#fff;line-height:1">NOM DU JOUEUR CIBLÉ</div>
+          <div id="cvSubP" style="font-size:12px;color:rgba(255,255,255,.4);margin-top:5px">Club · Poste · Nationalité</div>
+        </div>
+        <div class="cover-rec-badge rec" id="cvDecBadgeP">RECRUTER</div>
+      </div>
+      <div class="cover-divider"></div>
+      <div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:10px">
+        <div><div class="cover-meta-label">Scout</div><div style="font-size:11px;color:rgba(255,255,255,.6)" id="cpScout">—</div></div>
+        <div><div class="cover-meta-label">Club</div><div style="font-size:11px;color:rgba(255,255,255,.6)" id="cpClub">—</div></div>
+        <div><div class="cover-meta-label">Date</div><div style="font-size:11px;color:rgba(255,255,255,.6)" id="cpDate">—</div></div>
+      </div>
+      <div class="cover-bottom">
+        <span style="font-family:'Syne',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.3);text-transform:uppercase" id="cpAnalyst">SCOUT</span>
+        <div class="cover-acc-line"></div>
+      </div>
+    </div>
+  </div>
+  <p style="font-size:12px;color:var(--txt3);text-align:center;margin-bottom:20px">Les champs se synchronisent en temps réel</p>
+  <div class="card" style="padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div class="mfield"><label style="display:block;font-family:'Syne',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--txt3);margin-bottom:5px">Nom du joueur</label><input style="width:100%;padding:10px 12px;background:var(--surf2);border:1px solid var(--bord2);border-radius:8px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:14px;outline:none" oninput="syncF('cvName',this.value,'cvNameP')" placeholder="Prénom NOM"></div>
+    <div class="mfield"><label style="display:block;font-family:'Syne',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--txt3);margin-bottom:5px">Club · Poste · Nationalité</label><input style="width:100%;padding:10px 12px;background:var(--surf2);border:1px solid var(--bord2);border-radius:8px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:14px;outline:none" oninput="syncF('cvSub',this.value,'cvSubP')" placeholder="FC Exemple · AV · FRA · 23 ans"></div>
+    <div class="mfield"><label style="display:block;font-family:'Syne',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--txt3);margin-bottom:5px">Nom du scout</label><input style="width:100%;padding:10px 12px;background:var(--surf2);border:1px solid var(--bord2);border-radius:8px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:14px;outline:none" oninput="syncCF('cmScout',this.value,'cpScout')" placeholder="Prénom NOM"></div>
+    <div class="mfield"><label style="display:block;font-family:'Syne',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--txt3);margin-bottom:5px">Club recruteur</label><input style="width:100%;padding:10px 12px;background:var(--surf2);border:1px solid var(--bord2);border-radius:8px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:14px;outline:none" oninput="syncCF('cmClub',this.value,'cpClub')" placeholder="Nom du club"></div>
+    <div class="mfield"><label style="display:block;font-family:'Syne',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--txt3);margin-bottom:5px">Date du rapport</label><input style="width:100%;padding:10px 12px;background:var(--surf2);border:1px solid var(--bord2);border-radius:8px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:14px;outline:none" oninput="syncCF('cmDate',this.value,'cpDate')" placeholder="JJ/MM/AAAA"></div>
+    <div class="mfield"><label style="display:block;font-family:'Syne',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--txt3);margin-bottom:5px">Décision couverture</label>
+      <select style="width:100%;padding:10px 12px;background:var(--surf2);border:1px solid var(--bord2);border-radius:8px;color:var(--txt);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;outline:none" onchange="syncDecision(this.value)">
+        <option value="rec">RECRUTER</option><option value="obs">OBSERVER</option><option value="eca">ÉCARTER</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="player-photo-wrap" id="photoWrap"><span class="hint">Photo</span><input type="file" accept="image/*" onchange="loadPhoto(this,'photoWrap')"></div>
+  <div>
+    <input class="player-name" id="playerName" value="NOM DU JOUEUR CIBLÉ" oninput="syncAll()">
+    <input class="player-sub" value="Club · Poste · Nationalité · Âge">
+  </div>
+  <div class="decision-wrap">
+    <div class="decision-select-wrap">
+      <select class="decision-select" id="decisionMain" onchange="syncDecision(this.value)">
+        <option value="rec">✓ RECRUTER</option>
+        <option value="obs">◎ OBSERVER</option>
+        <option value="eca">✕ ÉCARTER</option>
+      </select>
+      <input class="scout-ctx" value="Scout · Club recruteur · 2025" placeholder="Scout · Club · Date">
+    </div>
+  </div>
+</header>
+
+<!-- TABS -->
+<div class="tabs no-print">
+  <button class="tbtn" onclick="showTab('cover',this)">Couverture</button>
+  <button class="tbtn on" onclick="showTab('identite',this)">Identité</button>
+  <button class="tbtn" onclick="showTab('profil',this)">Profil tactique</button>
+  <button class="tbtn" onclick="showTab('radar',this)">Évaluation</button>
+  <button class="tbtn" onclick="showTab('marche',this)">Marché</button>
+  <button class="tbtn" onclick="showTab('suivi',this)">Suivi</button>
+  <button class="tbtn" onclick="showTab('comparatif',this)">Comparatif</button>
+  <button class="tbtn" onclick="showTab('decision',this)">Décision</button>
+</div>
+
+<!-- ══ IDENTITÉ ══ -->
+<div class="tcontent on" id="tab-identite">
+  <div class="stitle">Fiche identité — Joueur ciblé</div>
+  <div class="identity-grid">
+    <div class="card id-photo-card">
+      <div class="id-photo-big" id="idPhoto"><span class="hint">Photo<br>du joueur</span><input type="file" accept="image/*" onchange="loadPhoto(this,'idPhoto')"></div>
+      <div class="id-pos-badge" id="idPosBadge">AV</div>
+      <div class="id-num-card">
+        <div class="id-num-val" id="idNum">9</div>
+        <div class="id-num-lbl">N° maillot</div>
+      </div>
+    </div>
+    <div class="card id-fields">
+      <div class="id-field"><label>Nom complet</label><input placeholder="Prénom NOM" oninput="syncAll()"></div>
+      <div class="id-field"><label>Date de naissance</label><input type="date"></div>
+      <div class="id-field"><label>Âge</label><input placeholder="23 ans" type="number" min="14" max="50"></div>
+      <div class="id-field"><label>Nationalité</label><input placeholder="Française"></div>
+      <div class="id-field"><label>Pied dominant</label><select><option>Droit</option><option>Gauche</option><option>Les deux</option></select></div>
+      <div class="id-field"><label>Taille / Poids</label><input placeholder="182 cm / 78 kg"></div>
+      <div class="id-field"><label>Poste principal</label>
+        <select id="posSelect" onchange="syncPos(this.value)">
+          <option value="GK">GK — Gardien</option><option value="DC">DC — Défenseur central</option>
+          <option value="DD">DD — Défenseur droit</option><option value="DG">DG — Défenseur gauche</option>
+          <option value="PD">PD — Piston droit</option><option value="PG">PG — Piston gauche</option>
+          <option value="MDF">MDF — Milieu défensif</option><option value="MC">MC — Milieu central</option>
+          <option value="MAD">MAD — Milieu att. droit</option><option value="MAC">MAC — Milieu att. central</option>
+          <option value="MAG">MAG — Milieu att. gauche</option>
+          <option value="AD">AD — Ailier droit</option><option value="AG">AG — Ailier gauche</option>
+          <option value="AV" selected>AV — Avant-centre</option><option value="SS">SS — Second attaquant</option>
+        </select>
+      </div>
+      <div class="id-field"><label>Poste secondaire</label><input placeholder="SS, MAC..."></div>
+      <div class="id-field"><label>N° maillot</label><input placeholder="9" type="number" min="1" max="99" oninput="document.getElementById('idNum').textContent=this.value||'—'"></div>
+      <div class="id-field"><label>Club actuel</label><input placeholder="Nom du club"></div>
+      <div class="id-field"><label>Championnat</label><input placeholder="Ex: Ligue 2 · France"></div>
+      <div class="id-field"><label>Statut joueur</label>
+        <select><option>Professionnel</option><option>Semi-professionnel</option><option>Amateur</option><option>Espoir / Académie</option></select>
+      </div>
+    </div>
+  </div>
+  <div class="stitle" style="margin-top:8px">Photos — Identité</div>
+  <div class="photos-grid" id="photosId"></div>
+  <button class="add-photo-btn no-print" onclick="addPhoto('photosId')">+ Ajouter une photo</button>
+</div>
+
+<!-- ══ PROFIL TACTIQUE ══ -->
+<div class="tcontent" id="tab-profil">
+  <div class="stitle">Critères de recrutement recherchés</div>
+  <div class="crit-grid">
+    <div class="crit-card card">
+      <div class="crit-title">Qualités techniques</div>
+      <div id="critTech"></div>
+    </div>
+    <div class="crit-card phy card">
+      <div class="crit-title" style="color:#0891B2">Qualités physiques</div>
+      <div id="critPhy"></div>
+    </div>
+    <div class="crit-card men card">
+      <div class="crit-title" style="color:#D97706">Qualités mentales / tactiques</div>
+      <div id="critMen"></div>
+    </div>
+  </div>
+
+  <div class="stitle" style="margin-top:8px">Profil tactique du joueur</div>
+  <div class="profil-grid">
+    <div class="profil-card card">
+      <h5><em>▶</em>Style de jeu</h5>
+      <div class="profil-tags" id="styleTags">
+        <span class="p-tag" onclick="this.classList.toggle('on')">Jeu dos au but</span>
+        <span class="p-tag" onclick="this.classList.toggle('on')">Attaquant mobile</span>
+        <span class="p-tag" onclick="this.classList.toggle('on')">Finisseur</span>
+        <span class="p-tag" onclick="this.classList.toggle('on')">Pressing haut</span>
+        <span class="p-tag" onclick="this.classList.toggle('on')">Jeu en profondeur</span>
+        <span class="p-tag" onclick="this.classList.toggle('on')">Combinaisons</span>
+        <span class="p-tag" onclick="this.classList.toggle('on')">Dribbleur</span>
+        <span class="p-tag" onclick="this.classList.toggle('on')">Leader offensif</span>
+        <span class="p-tag" onclick="this.classList.toggle('on')">Créateur</span>
+        <span class="p-tag" onclick="this.classList.toggle('on')">Polyvalent</span>
+      </div>
+      <textarea placeholder="Description libre du style de jeu : comportements observés, automatismes, profil..."></textarea>
+    </div>
+    <div class="profil-card card">
+      <h5><em>◈</em>Adéquation avec notre projet</h5>
+
+      <!-- Systèmes de jeu -->
+      <div style="font-family:'Syne',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--txt3);margin-bottom:6px">Système(s) de jeu</div>
+      <div class="profil-tags" style="margin-bottom:14px">
+        <span class="p-tag" onclick="this.classList.toggle('req')">4-3-3</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">4-4-2</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">4-2-3-1</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">4-1-4-1</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">4-3-2-1</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">4-2-2-2</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">3-5-2</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">3-4-3</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">3-4-2-1</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">5-3-2</span>
+      </div>
+
+      <!-- Style de jeu collectif -->
+      <div style="font-family:'Syne',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--txt3);margin-bottom:6px">Style de jeu collectif</div>
+      <div class="profil-tags" style="margin-bottom:14px">
+        <span class="p-tag" onclick="this.classList.toggle('req')">Pressing haut</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">Pressing moyen</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">Bloc bas</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">Bloc médian</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">Jeu court</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">Jeu long / direct</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">Possession</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">Contre-attaque</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">Transitions rapides</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">Jeu en profondeur</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">Combinaisons courtes</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">Jeu sur les côtés</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">Jeu axial</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">Intensité physique</span>
+      </div>
+
+      <!-- Rôle dans l'équipe -->
+      <div style="font-family:'Syne',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--txt3);margin-bottom:6px">Rôle envisagé</div>
+      <div class="profil-tags" style="margin-bottom:14px">
+        <span class="p-tag" onclick="this.classList.toggle('req')">Titulaire</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">Joker offensif</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">Rotation</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">Leader technique</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">Leader vestiaire</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">Profil d'avenir</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">Doublon poste</span>
+        <span class="p-tag" onclick="this.classList.toggle('req')">Polyvalent</span>
+      </div>
+
+      <textarea placeholder="Analyse de l'adéquation entre le profil du joueur et les besoins tactiques du club : comment ce joueur s'intègre dans le système, complémentarité avec l'effectif existant..."></textarea>
+    </div>
+    <div class="profil-card card">
+      <h5><em>▶</em>Points forts observés</h5>
+      <textarea style="min-height:130px" placeholder="Forces principales du joueur : actions récurrentes, qualités dominantes, impact collectif..."></textarea>
+    </div>
+    <div class="profil-card card">
+      <h5><em>▶</em>Points de vigilance</h5>
+      <textarea style="min-height:130px" placeholder="Zones de risque, lacunes techniques, comportements problématiques, blessures récurrentes..."></textarea>
+    </div>
+  </div>
+  <div class="stitle" style="margin-top:8px">Photos — Profil tactique</div>
+  <div class="photos-grid" id="photosProfil"></div>
+  <button class="add-photo-btn no-print" onclick="addPhoto('photosProfil')">+ Ajouter une photo</button>
+</div>
+
+<!-- ══ ÉVALUATION RADAR ══ -->
+<div class="tcontent" id="tab-radar">
+  <div class="stitle">Évaluation scout — Notation</div>
+  <div class="radar-wrap">
+    <div class="card radar-card">
+      <div class="radar-svg-wrap"><svg id="radarSvg" viewBox="0 0 300 300" width="100%"></svg></div>
+    </div>
+    <div class="card radar-card" style="justify-content:flex-start">
+      <div class="stitle" style="width:100%;margin-bottom:16px">Ajuster les notes</div>
+      <div class="radar-controls" id="radarCtrls"></div>
+    </div>
+  </div>
+  <div class="stitle" style="margin-top:4px">Détail par critère</div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+    <div class="card ab"><h5><em>◈</em>Technique</h5><textarea placeholder="Qualité de touche, frappe, dribble, passe, contrôle orienté..."></textarea></div>
+    <div class="card ab"><h5><em>◈</em>Physique</h5><textarea placeholder="Vitesse, gabarit, endurance, explosivité, puissance dans les duels..."></textarea></div>
+    <div class="card ab"><h5><em>◈</em>Tactique</h5><textarea placeholder="Lecture du jeu, positionnement, pressing, déplacements sans ballon..."></textarea></div>
+    <div class="card ab"><h5><em>◈</em>Mental</h5><textarea placeholder="Leadership, concentration, résilience, comportement sous pression..."></textarea></div>
+    <div class="card ab"><h5><em>◈</em>Défense</h5><textarea placeholder="Duels défensifs, récupérations, comportement en phase défensive..."></textarea></div>
+    <div class="card ab"><h5><em>◈</em>Attaque</h5><textarea placeholder="Finition, créativité offensive, présence dans la surface, déclenchements..."></textarea></div>
+  </div>
+</div>
+
+<!-- ══ MARCHÉ & CONTRAT ══ -->
+<div class="tcontent" id="tab-marche">
+  <div class="stitle">Valeur marchande &amp; Contexte contrat</div>
+  <div class="market-grid">
+    <div class="market-card card">
+      <div class="market-lbl">Valeur estimée</div>
+      <input class="market-input" placeholder="800 000 €">
+      <div class="market-sub"><input placeholder="Source : Transfermarkt / estimation interne"></div>
+    </div>
+    <div class="market-card card">
+      <div class="market-lbl">Salaire estimé</div>
+      <input class="market-input" placeholder="4 000 €/mois">
+      <div class="market-sub"><input placeholder="Brut mensuel estimé"></div>
+    </div>
+    <div class="market-card card">
+      <div class="market-lbl">Fin de contrat</div>
+      <input class="market-input" placeholder="Juin 2025">
+      <div class="market-sub"><input placeholder="Clause libératoire si connue"></div>
+    </div>
+    <div class="market-card card">
+      <div class="market-lbl">Budget cible</div>
+      <input class="market-input" placeholder="600 000 €">
+      <div class="market-sub"><input placeholder="Enveloppe disponible"></div>
+    </div>
+    <div class="market-card card">
+      <div class="market-lbl">Faisabilité</div>
+      <select style="width:100%;background:var(--surf2);border:1px solid var(--bord);border-radius:8px;padding:8px 12px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--txt);outline:none;margin-top:8px">
+        <option>Très accessible</option><option>Accessible</option><option selected>Négociable</option><option>Difficile</option><option>Hors budget</option>
+      </select>
+      <div class="market-sub" style="margin-top:8px"><input placeholder="Commentaire faisabilité..."></div>
+    </div>
+    <div class="market-card card">
+      <div class="market-lbl">Intérêt joueur</div>
+      <select style="width:100%;background:var(--surf2);border:1px solid var(--bord);border-radius:8px;padding:8px 12px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--txt);outline:none;margin-top:8px">
+        <option>Très motivé</option><option>Ouvert</option><option selected>À confirmer</option><option>Peu motivé</option><option>Refus</option>
+      </select>
+      <div class="market-sub" style="margin-top:8px"><input placeholder="Source de l'info..."></div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px">
+    <div class="card ab"><h5><em>▶</em>Situation contractuelle</h5><textarea placeholder="Détail du contrat, options, agents, clubs concurrents en approche..."></textarea></div>
+    <div class="card ab"><h5><em>▶</em>Stratégie d'approche</h5><textarea placeholder="Comment initier le contact, intermédiaires, timing recommandé..."></textarea></div>
+    <div class="card ab full"><h5><em>◈</em>Analyse marché</h5><textarea style="min-height:80px" placeholder="Contexte de marché : joueurs similaires disponibles, comparaison de valeur, opportunités à saisir..."></textarea></div>
+  </div>
+</div>
+
+<!-- ══ SUIVI OBSERVATIONS ══ -->
+<div class="tcontent" id="tab-suivi">
+  <div class="stitle">Suivi temporel — Observations de matchs</div>
+  <div class="obs-list" id="obsList"></div>
+  <button class="add-obs-btn no-print" onclick="addObs()">+ Ajouter une observation</button>
+  <div class="stitle" style="margin-top:20px">Photos — Observations</div>
+  <div class="photos-grid" id="photosObs"></div>
+  <button class="add-photo-btn no-print" onclick="addPhoto('photosObs')">+ Ajouter une photo</button>
+</div>
+
+<!-- ══ COMPARATIF ══ -->
+<div class="tcontent" id="tab-comparatif">
+  <div class="stitle">Comparatif cibles</div>
+  <div class="comp-grid" id="compGrid"></div>
+  <button class="add-obs-btn no-print" onclick="addCompPlayer()" style="margin-bottom:20px">+ Ajouter une cible</button>
+  <div class="card" style="padding:20px">
+    <div class="stitle">Analyse comparative</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="ab card"><h5><em>▶</em>Avantages du joueur principal</h5><textarea placeholder="Ce qui différencie ce joueur des alternatives..."></textarea></div>
+      <div class="ab card"><h5><em>▶</em>Points de vigilance comparés</h5><textarea placeholder="Ce dans quoi les alternatives sont meilleures..."></textarea></div>
+      <div class="ab card full"><h5><em>◈</em>Recommandation comparative</h5><textarea style="min-height:80px" placeholder="Synthèse : quel joueur privilégier et pourquoi, dans quel ordre approcher les cibles..."></textarea></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DÉCISION FINALE ══ -->
+<div class="tcontent" id="tab-decision">
+  <div class="stitle">Décision finale</div>
+  <div class="decision-grid" style="margin-bottom:24px">
+    <div class="dec-card rec-card card sel" id="dc-rec" onclick="selectDecision('rec')">
+      <div class="dec-check">✓</div>
+      <div class="dec-icon">✓</div>
+      <div class="dec-title">Recruter</div>
+      <div class="dec-sub">Profil correspondant aux besoins. Lancer les démarches.</div>
+    </div>
+    <div class="dec-card obs-card card" id="dc-obs" onclick="selectDecision('obs')">
+      <div class="dec-check">◎</div>
+      <div class="dec-icon">◎</div>
+      <div class="dec-title">Observer</div>
+      <div class="dec-sub">Profil intéressant, nécessite davantage d'observations.</div>
+    </div>
+    <div class="dec-card eca-card card" id="dc-eca" onclick="selectDecision('eca')">
+      <div class="dec-check">✕</div>
+      <div class="dec-icon">✕</div>
+      <div class="dec-title">Écarter</div>
+      <div class="dec-sub">Profil ne correspondant pas aux critères ou au budget.</div>
+    </div>
+  </div>
+
+  <div class="stitle">Notation globale</div>
+  <div class="notation-grid" style="margin-bottom:24px">
+    <div class="note-card card"><div class="note-lbl">Technique</div><input class="note-in" type="number" min="0" max="10" placeholder="—"></div>
+    <div class="note-card card"><div class="note-lbl">Physique</div><input class="note-in" type="number" min="0" max="10" placeholder="—"></div>
+    <div class="note-card card"><div class="note-lbl">Tactique</div><input class="note-in" type="number" min="0" max="10" placeholder="—"></div>
+    <div class="note-card card"><div class="note-lbl">Mental</div><input class="note-in" type="number" min="0" max="10" placeholder="—"></div>
+    <div class="note-card card"><div class="note-lbl">Potentiel</div><input class="note-in" type="number" min="0" max="10" placeholder="—"></div>
+    <div class="note-card card"><div class="note-lbl">Adéquation</div><input class="note-in" type="number" min="0" max="10" placeholder="—"></div>
+  </div>
+
+  <div class="stitle">Synthèse scout</div>
+  <div class="pf-grid" style="margin-bottom:20px">
+    <div class="pf-card fort card">
+      <h5>Arguments pour</h5>
+      <div id="pfF">
+        <div class="pf-item"><span class="pf-dot"></span><input placeholder="Ex: Profil rare sur le marché à ce prix"></div>
+        <div class="pf-item"><span class="pf-dot"></span><input placeholder="Ex: Fin de contrat = opportunité de marché"></div>
+      </div>
+      <button class="add-btn" onclick="addPF('pfF','fort')">+ Ajouter</button>
+    </div>
+    <div class="pf-card faible card">
+      <h5>Arguments contre</h5>
+      <div id="pfC">
+        <div class="pf-item"><span class="pf-dot"></span><input placeholder="Ex: Adaptation niveau supérieur incertaine"></div>
+        <div class="pf-item"><span class="pf-dot"></span><input placeholder="Ex: Historique blessures musculaires"></div>
+      </div>
+      <button class="add-btn" onclick="addPF('pfC','faible')">+ Ajouter</button>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div class="card ab full"><h5><em>◈</em>Rapport final du scout</h5><textarea style="min-height:140px" placeholder="Portrait complet : qualités, niveau actuel, potentiel de progression, adéquation avec le projet sportif, recommandation argumentée, priorité de recrutement, timing suggéré..."></textarea></div>
+    <div class="card ab"><h5><em>▶</em>Prochaines étapes</h5><textarea placeholder="Actions concrètes à engager : contact agent, invitation à un match, proposition de contrat..."></textarea></div>
+    <div class="card ab"><h5><em>▶</em>Priorité de recrutement</h5>
+      <select style="width:100%;background:var(--surf2);border:1px solid var(--bord);border-radius:8px;padding:9px 12px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--txt);outline:none;margin-bottom:10px">
+        <option>Priorité 1 — Cible principale</option>
+        <option>Priorité 2 — Alternative solide</option>
+        <option>Priorité 3 — Option de secours</option>
+        <option>En veille — À recontacter</option>
+      </select>
+      <textarea placeholder="Contexte de la priorité : deadline, dépendances avec d'autres recrutements..."></textarea>
+    </div>
+  </div>
+</div>
+
+<footer class="rapport-footer">
+  <div class="footer-brand">Rapport Recrutement <span>·</span> <input value="SCOUT · 2025"></div>
+  <div class="footer-right" id="footerDate"></div>
+</footer>
+</div>
+
+<div class="fab-wrap no-print">
+  <button class="fab main" onclick="exportPDF()">↓ Imprimer / PDF</button>
+</div>
+
+<script>
+/* ═══════ RADAR ═══════ */
+const RADAR_DIMS=['Technique','Physique','Tactique','Mental','Défense','Attaque'];
+const radarVals=[7,7,6,7,5,8];
+
+function drawRadar(){
+  const svg=document.getElementById('radarSvg');
+  const cx=150,cy=150,R=108,n=RADAR_DIMS.length;
+  let html='';
+  for(let r=2;r<=10;r+=2){
+    const pts=RADAR_DIMS.map((_,i)=>{const a=(i/n)*Math.PI*2-Math.PI/2;return `${cx+R*(r/10)*Math.cos(a)},${cy+R*(r/10)*Math.sin(a)}`;}).join(' ');
+    html+=`<polygon points="${pts}" fill="none" stroke="rgba(5,150,105,${r===10?'.28':'.1'})" stroke-width="${r===10?'1':'0.8'}"/>`;
+  }
+  RADAR_DIMS.forEach((_,i)=>{const a=(i/n)*Math.PI*2-Math.PI/2;html+=`<line x1="${cx}" y1="${cy}" x2="${cx+R*Math.cos(a)}" y2="${cy+R*Math.sin(a)}" stroke="rgba(5,150,105,.18)" stroke-width="0.8"/>`;});
+  RADAR_DIMS.forEach((d,i)=>{
+    const a=(i/n)*Math.PI*2-Math.PI/2;
+    const lx=cx+(R+18)*Math.cos(a),ly=cy+(R+18)*Math.sin(a);
+    const anchor=Math.abs(Math.cos(a))<0.1?'middle':Math.cos(a)<0?'end':'start';
+    html+=`<text x="${lx}" y="${ly}" text-anchor="${anchor}" dominant-baseline="central" fill="var(--txt2)" font-size="10" font-weight="600" font-family="Syne,sans-serif">${d}</text>`;
+  });
+  const pts=RADAR_DIMS.map((_,i)=>{const a=(i/n)*Math.PI*2-Math.PI/2;return `${cx+R*(radarVals[i]/10)*Math.cos(a)},${cy+R*(radarVals[i]/10)*Math.sin(a)}`;}).join(' ');
+  html+=`<polygon points="${pts}" fill="rgba(5,150,105,0.18)" stroke="#059669" stroke-width="2"/>`;
+  RADAR_DIMS.forEach((_,i)=>{
+    const a=(i/n)*Math.PI*2-Math.PI/2;
+    const px=cx+R*(radarVals[i]/10)*Math.cos(a),py=cy+R*(radarVals[i]/10)*Math.sin(a);
+    html+=`<circle cx="${px}" cy="${py}" r="4" fill="#059669" stroke="#fff" stroke-width="1.5"/>`;
+  });
+  svg.innerHTML=html;
+}
+
+function buildRadarControls(){
+  const c=document.getElementById('radarCtrls');
+  c.innerHTML=RADAR_DIMS.map((d,i)=>`
+    <div class="radar-ctrl">
+      <span class="radar-ctrl-label">${d}</span>
+      <input type="range" class="rslider" min="0" max="10" value="${radarVals[i]}" oninput="radarVals[${i}]=parseInt(this.value);document.getElementById('rv${i}').textContent=this.value;drawRadar()">
+      <span class="radar-ctrl-val" id="rv${i}">${radarVals[i]}</span>
+    </div>`).join('');
+}
+
+/* ═══════ CRITÈRES ═══════ */
+const CRIT_TECH=['Contrôle orienté','Frappe des deux pieds','Dribble en vitesse','Tête','Passe longue','Jeu dos au but','Finition'];
+const CRIT_PHY=['Vitesse de pointe','Accélération','Puissance physique','Endurance','Explosivité','Gabarit'];
+const CRIT_MEN=['Lecture du jeu','Pressing haut','Leadership','Concentration','Résilience','Polyvalence'];
+
+function buildCriteres(id,items){
+  const c=document.getElementById(id);
+  c.innerHTML=items.map((item,i)=>`
+    <div class="crit-item">
+      <label>${item}</label>
+      <div class="crit-stars">
+        ${[1,2,3,4,5].map(n=>`<button class="crit-star" onclick="setCritStar(this,${i},'${id}')" data-n="${n}">★</button>`).join('')}
+      </div>
+      <span class="req-badge" onclick="this.classList.toggle('on')">Requis</span>
+    </div>`).join('');
+}
+
+function setCritStar(btn,idx,gid){
+  const n=parseInt(btn.dataset.n);
+  const stars=btn.closest('.crit-item').querySelectorAll('.crit-star');
+  stars.forEach((s,i)=>s.classList.toggle('on',i<n));
+}
+
+/* ═══════ OBSERVATIONS ═══════ */
+let obsCount=0;
+function addObs(){
+  obsCount++;
+  const list=document.getElementById('obsList');
+  const uid='obs'+obsCount;
+  const div=document.createElement('div');
+  div.className='obs-item card';
+  div.innerHTML=`
+    <div class="obs-header">
+      <div class="obs-date"><input placeholder="JJ/MM/AAAA" type="date"></div>
+      <div class="obs-match" style="flex:1"><input placeholder="Match : Équipe A vs Équipe B · Compétition"></div>
+      <div class="obs-note-wrap">
+        <span class="obs-note-lbl">Note</span>
+        <input class="obs-note-input" type="number" min="0" max="10" placeholder="—">
+        <span class="obs-note-lbl">/10</span>
+      </div>
+    </div>
+    <div class="obs-body">
+      <div class="obs-field"><label>Points forts observés</label><textarea placeholder="Actions positives remarquées lors de ce match..."></textarea></div>
+      <div class="obs-field"><label>Points de vigilance</label><textarea placeholder="Zones de risque, actions négatives, comportements..."></textarea></div>
+      <div class="obs-field"><label>Contexte du match</label><textarea placeholder="Score, opposition, temps de jeu, poste joué, système..."></textarea></div>
+      <div class="obs-field"><label>Impression générale</label><textarea placeholder="Ressenti global de l'observation, impact dans le match..."></textarea></div>
+    </div>`;
+  list.appendChild(div);
+}
+
+/* ═══════ COMPARATIF ═══════ */
+const COMP_AXES=['Technique','Physique','Tactique','Mental','Potentiel'];
+let compPlayers=[];
+
+function addCompPlayer(){
+  const uid='cp'+Math.random().toString(36).slice(2,6);
+  compPlayers.push({uid,name:'',vals:[7,6,7,6,7],active:compPlayers.length===0});
+  renderCompGrid();
+}
+
+function renderCompGrid(){
+  const grid=document.getElementById('compGrid');
+  grid.innerHTML=compPlayers.map((p,pi)=>`
+    <div class="comp-player-card card ${p.active?'active':''}" onclick="setActiveComp(${pi})">
+      <div class="comp-photo" id="cph_${p.uid}">
+        <span class="hint" style="font-size:9px">Photo</span>
+        <input type="file" accept="image/*" onchange="loadPhoto(this,'cph_${p.uid}')">
+      </div>
+      <div class="comp-name"><input placeholder="Nom du joueur" value="${p.name}" oninput="compPlayers[${pi}].name=this.value;renderCompGrid()"></div>
+      <div class="comp-bars">
+        ${COMP_AXES.map((ax,ai)=>`
+        <div class="comp-row">
+          <span class="comp-lbl">${ax}</span>
+          <div class="comp-bar-bg"><div class="comp-bar-fill" style="width:${p.vals[ai]*10}%;background:${p.active?'var(--acc)':'var(--gold)'}"></div></div>
+          <span class="comp-val-txt" style="color:${p.active?'var(--acc)':'var(--gold)'}">${p.vals[ai]}</span>
+        </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+function setActiveComp(idx){compPlayers.forEach((p,i)=>p.active=i===idx);renderCompGrid();}
+
+/* ═══════ DÉCISION ═══════ */
+function selectDecision(val){
+  ['rec','obs','eca'].forEach(v=>{
+    document.getElementById('dc-'+v).classList.toggle('sel',v===val);
+  });
+  document.getElementById('decisionMain').value=val;
+  syncDecision(val);
+}
+function syncDecision(val){
+  const labels={rec:'RECRUTER',obs:'OBSERVER',eca:'ÉCARTER'};
+  const badge=document.getElementById('cvDecBadge');
+  const badgeP=document.getElementById('cvDecBadgeP');
+  if(badge){badge.textContent=labels[val];badge.className='cover-rec-badge '+val;}
+  if(badgeP){badgeP.textContent=labels[val];badgeP.className='cover-rec-badge '+val;}
+  document.getElementById('decisionMain').value=val;
+  ['rec','obs','eca'].forEach(v=>document.getElementById('dc-'+v)?.classList.toggle('sel',v===val));
+}
+
+/* ═══════ UTILS ═══════ */
+function showTab(id,btn){
+  document.querySelectorAll('.tcontent').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tab-'+id).classList.add('on');btn.classList.add('on');
+}
+function syncPos(val){
+  document.getElementById('idPosBadge').textContent=val;
+}
+function syncAll(){
+  const v=document.getElementById('playerName').value;
+  const a=document.getElementById('cvName');if(a)a.value=v;
+  const b=document.getElementById('cvNameP');if(b)b.textContent=v;
+}
+function syncF(printId,val,previewId){
+  const el=document.getElementById(printId);if(el)el.value=val;
+  if(previewId){const p=document.getElementById(previewId);if(p)p.textContent=val||'—';}
+}
+function syncCF(printId,val,previewId){
+  const el=document.getElementById(printId);if(el)el.value=val;
+  if(previewId){const p=document.getElementById(previewId);if(p)p.textContent=val||'—';}
+  if(printId==='cmAnalyst'){const a=document.getElementById('cpAnalyst');if(a)a.textContent=val||'SCOUT';}
+}
+function loadPhoto(input,id){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();r.onload=e=>{
+    const el=document.getElementById(id);
+    el.innerHTML=`<img src="${e.target.result}"><input type="file" accept="image/*" onchange="loadPhoto(this,'${id}')">`;
+  };r.readAsDataURL(f);
+}
+function loadCoverPhoto(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();r.onload=e=>{
+    document.getElementById('cvPhoto').innerHTML=`<img src="${e.target.result}"><input type="file" accept="image/*" onchange="loadCoverPhoto(this)">`;
+    const p=document.getElementById('cvPhotoP');if(p)p.innerHTML=`<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    const pw=document.getElementById('photoWrap');if(pw)pw.innerHTML=`<img src="${e.target.result}"><input type="file" accept="image/*" onchange="loadPhoto(this,'photoWrap')">`;
+    const big=document.getElementById('idPhoto');if(big)big.innerHTML=`<img src="${e.target.result}"><input type="file" accept="image/*" onchange="loadPhoto(this,'idPhoto')">`;
+  };r.readAsDataURL(f);
+}
+function addPhoto(cid){
+  const c=document.getElementById(cid);
+  const uid='p'+Math.random().toString(36).slice(2,7);
+  const d=document.createElement('div');d.className='photo-card card';
+  d.innerHTML=`<div class="photo-drop" id="dr_${uid}"><span style="font-size:20px;color:var(--txt3)">⊕</span><span style="font-size:11px;color:var(--txt3);text-align:center">Ajouter une photo</span><input type="file" accept="image/*" onchange="lpho(this,'${uid}')"></div><div class="photo-legend" style="display:none" id="lg_${uid}"><input placeholder="Légende..."></div>`;
+  c.appendChild(d);
+}
+function lpho(input,uid){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();r.onload=e=>{
+    const dr=document.getElementById('dr_'+uid),lg=document.getElementById('lg_'+uid);
+    dr.innerHTML=`<img class="photo-preview" src="${e.target.result}"><input type="file" accept="image/*" onchange="lpho(this,'${uid}')" style="position:absolute;inset:0;opacity:0;cursor:pointer">`;
+    dr.style.border='none';dr.style.minHeight='auto';lg.style.display='block';
+  };r.readAsDataURL(f);
+}
+function addPF(id,type){
+  const d=document.createElement('div');d.className='pf-item';
+  d.innerHTML=`<span class="pf-dot"></span><input placeholder="Ajouter...">`;
+  document.getElementById(id).appendChild(d);
+}
+function exportPDF(){
+  document.getElementById('coverPage').style.display='flex';
+  document.querySelectorAll('.tcontent').forEach(t=>{t.style.display='block';t.style.marginBottom='28px';});
+  window.print();
+  setTimeout(()=>{
+    document.getElementById('coverPage').style.display='none';
+    document.querySelectorAll('.tcontent').forEach(t=>{t.style.display='';t.style.marginBottom='';});
+    const active=document.querySelector('.tcontent.on');if(active)active.style.display='block';
+  },1400);
+}
+
+/* ═══════ INIT ═══════ */
+document.getElementById('footerDate').textContent=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+document.getElementById('coverDate').textContent=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+buildRadarControls();drawRadar();
+buildCriteres('critTech',CRIT_TECH);
+buildCriteres('critPhy',CRIT_PHY);
+buildCriteres('critMen',CRIT_MEN);
+addObs();addObs();
+addCompPlayer();addCompPlayer();
+['photosId','photosProfil','photosObs'].forEach(id=>{addPhoto(id);addPhoto(id);addPhoto(id);});
+</script>
+</body>
+</html>

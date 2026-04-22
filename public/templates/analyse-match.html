@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rapport Analyse Match</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════ */
+:root {
+  --bg:      #EEEEF2;
+  --bg2:     #E4E5EA;
+  --surf:    #FFFFFF;
+  --surf2:   #F5F6F9;
+  --surf3:   #ECECF2;
+  --bord:    rgba(0,0,0,0.07);
+  --bord2:   rgba(0,0,0,0.13);
+  --txt:     #131520;
+  --txt2:    #525870;
+  --txt3:    #979DB8;
+  --acc:     #1A56DB;
+  --acc2:    #1344B8;
+  --home:    #15803D;
+  --away:    #B91C1C;
+  --gold:    #B45309;
+  --gazon:   #1E5631;
+  --shad:    0 1px 2px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05);
+  --shad2:   0 2px 8px rgba(0,0,0,0.08), 0 8px 32px rgba(0,0,0,0.07);
+}
+
+/* ═══════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════ */
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--txt);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════════
+   PRINT — mise en page structurée
+═══════════════════════════════════════ */
+@media print {
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .no-print { display: none !important; }
+  body { background: #fff; font-size: 13px; }
+
+  /* Couverture pleine page */
+  .cover-page {
+    page-break-after: always;
+    min-height: 100vh;
+    display: flex !important;
+  }
+
+  /* Chaque onglet = nouvelle section */
+  .print-section {
+    page-break-before: always;
+    display: block !important;
+  }
+
+  /* En-tête sur chaque page imprimée */
+  .print-header {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0 10px;
+    border-bottom: 1px solid #e0e0e8;
+    margin-bottom: 20px;
+  }
+
+  .card { box-shadow: none; border: 1px solid #ddd; }
+  .tabs, .fab, .draw-toolbar, .draw-actions, .per-tabs { display: none !important; }
+  .tcontent { display: block !important; margin-bottom: 24px; }
+  .terrain-svg { max-height: 280px; }
+  .stats-grid { grid-template-columns: repeat(3,1fr); }
+  .cpa-grid { grid-template-columns: repeat(3,1fr); }
+
+  /* Pied de page */
+  @page {
+    margin: 16mm 14mm;
+  }
+}
+
+/* ═══════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════ */
+.page { max-width: 1160px; margin: 0 auto; padding: 0 24px 100px; }
+.card {
+  background: var(--surf);
+  border-radius: 14px;
+  border: 1px solid var(--bord);
+  box-shadow: var(--shad);
+}
+
+/* ═══════════════════════════════════════
+   COUVERTURE C — TERRAIN GRAPHIQUE
+═══════════════════════════════════════ */
+.cover-page {
+  display: none;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #0D1F13;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.cover-pitch-zone {
+  position: relative;
+  height: 52vh;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.cover-pitch-zone svg { width:100%; height:100%; }
+.cover-body {
+  flex: 1;
+  padding: 32px 52px 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.cover-tag {
+  font-family: 'Syne', sans-serif;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: rgba(255,255,255,0.28); margin-bottom: 20px;
+}
+.cover-matchup {
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 20px; margin-bottom: 24px;
+}
+.cover-club { display:flex; flex-direction:column; align-items:center; gap:10px; flex:1; }
+.cover-club-logo {
+  width:64px; height:64px; border-radius:50%;
+  border:1.5px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.07);
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden; position:relative; cursor:pointer; transition:border-color .2s;
+}
+.cover-club-logo:hover { border-color:#22C55E; }
+.cover-club-logo img { width:100%; height:100%; object-fit:contain; }
+.cover-club-logo .hint { font-size:9px; color:rgba(255,255,255,.28); text-align:center; line-height:1.3; }
+.cover-club-logo input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.cover-club-name {
+  font-family:'Syne',sans-serif; font-size:16px; font-weight:700;
+  color:rgba(255,255,255,0.85); text-align:center;
+  background:transparent; border:none; outline:none; width:160px;
+  border-bottom:1px dashed rgba(255,255,255,0.15); padding-bottom:3px; transition:border-color .2s;
+}
+.cover-club-name:focus { border-bottom-color:#22C55E; }
+.cover-score-block { text-align:center; }
+.cover-score {
+  font-family:'Syne',sans-serif; font-size:72px; font-weight:800;
+  color:#fff; line-height:1;
+  display:flex; align-items:center; gap:10px; justify-content:center;
+}
+.cover-score input {
+  font-family:'Syne',sans-serif; font-size:72px; font-weight:800;
+  color:#fff; background:transparent; border:none; outline:none;
+  width:64px; text-align:center; line-height:1;
+}
+.cover-score input:focus { color:#22C55E; }
+.cover-score-sep { color:rgba(255,255,255,0.2); font-size:52px; }
+.cover-score-sub {
+  font-size:10px; color:rgba(255,255,255,0.28); letter-spacing:2px;
+  margin-top:6px; font-family:'Syne',sans-serif; font-weight:600; text-transform:uppercase;
+}
+.cover-divider { height:1px; background:rgba(255,255,255,0.08); margin:20px 0; }
+.cover-meta { display:flex; gap:32px; align-items:flex-start; flex-wrap:wrap; }
+.cover-meta-item { display:flex; flex-direction:column; gap:3px; }
+.cover-meta-label {
+  font-family:'Syne',sans-serif; font-size:8px; font-weight:700;
+  text-transform:uppercase; letter-spacing:2px; color:rgba(255,255,255,0.25);
+}
+.cover-meta-val {
+  font-family:'DM Sans',sans-serif; font-size:13px; color:rgba(255,255,255,0.7);
+  background:transparent; border:none; outline:none;
+  border-bottom:1px dashed rgba(255,255,255,0.12); padding-bottom:2px; transition:border-color .2s;
+}
+.cover-meta-val:focus { border-bottom-color:#22C55E; }
+.cover-bottom {
+  display:flex; align-items:center; justify-content:space-between;
+  border-top:1px solid rgba(255,255,255,0.07); padding-top:16px;
+}
+.cover-analyst {
+  font-family:'Syne',sans-serif; font-size:10px; font-weight:700;
+  letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,0.3);
+  background:transparent; border:none; outline:none; transition:color .2s;
+}
+.cover-analyst:focus { color:rgba(255,255,255,0.7); }
+.cover-acc-line { width:28px; height:2px; background:#22C55E; border-radius:1px; }
+.cover-date-print { font-size:11px; color:rgba(255,255,255,0.2); font-family:'DM Mono',monospace; }
+.cover-preview {
+  background:#0D1F13; border-radius:16px; overflow:hidden;
+  border:1px solid rgba(255,255,255,0.08);
+  box-shadow:0 4px 24px rgba(0,0,0,0.25); margin-bottom:20px;
+}
+.cover-preview .cover-pitch-zone { height:200px; }
+.cover-preview .cover-body { padding:18px 24px 18px; }
+
+/* ── APERÇU PDF ── */
+.pdf-preview-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.pdf-preview-overlay.on { display: flex; }
+.pdf-preview-modal {
+  background: var(--surf);
+  border-radius: 16px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.25);
+  width: 100%; max-width: 860px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.pdf-preview-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--bord2);
+  flex-shrink: 0;
+}
+.pdf-preview-header h3 { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--txt); }
+.pdf-preview-actions { display:flex; gap:10px; }
+.pdf-preview-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  background: #e8e8ee;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+/* Pages de l'aperçu */
+.preview-page {
+  background: #fff;
+  width: 100%;
+  max-width: 760px;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+  overflow: hidden;
+  page-break-inside: avoid;
+}
+.preview-page-label {
+  font-family: 'Syne',sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--txt3);
+  text-align: center;
+  margin-bottom: 6px;
+  align-self: flex-start;
+  width: 100%;
+  max-width: 760px;
+}
+
+/* ═══════════════════════════════════════
+   EN-TÊTE DE SECTION (print)
+═══════════════════════════════════════ */
+.print-header {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0 8px;
+  border-bottom: 1px solid #e0e0e8;
+  margin-bottom: 18px;
+}
+.ph-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ph-logo { width: 28px; height: 28px; border-radius: 50%; object-fit:contain; }
+.ph-title { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:#131520; }
+.ph-right { font-family:'DM Mono',monospace; font-size:10px; color:#979DB8; }
+
+/* ═══════════════════════════════════════
+   HEADER SCREEN
+═══════════════════════════════════════ */
+.header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 20px;
+  padding: 32px 0 24px;
+  margin-bottom: 20px;
+}
+.club-block { display:flex; align-items:center; gap:14px; }
+.club-block.away { flex-direction:row-reverse; text-align:right; }
+.logo-wrap {
+  width:66px; height:66px; border-radius:50%;
+  border:2px solid var(--bord2); background:var(--surf2);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; overflow:hidden; flex-shrink:0; position:relative;
+  transition:border-color .2s;
+}
+.logo-wrap:hover { border-color:var(--acc); }
+.logo-wrap img { width:100%; height:100%; object-fit:contain; }
+.logo-wrap .hint { font-size:10px; color:var(--txt3); text-align:center; line-height:1.3; padding:6px; }
+.logo-wrap input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.club-name {
+  font-family:'Syne',sans-serif; font-size:22px; font-weight:700;
+  letter-spacing:.5px; line-height:1.1;
+  background:transparent; border:none; outline:none;
+  color:var(--txt); width:190px;
+  border-bottom:1px dashed transparent; transition:border-color .2s;
+}
+.club-name:focus { border-bottom-color:var(--acc); }
+.club-block.away .club-name { text-align:right; }
+.club-sub {
+  font-size:10px; color:var(--txt3); text-transform:uppercase;
+  letter-spacing:1.5px; margin-top:4px; font-family:'Syne',sans-serif;
+  font-weight:500; background:transparent; border:none; outline:none;
+  width:190px; border-bottom:1px dashed transparent; transition:border-color .2s;
+}
+.club-sub:focus { border-bottom-color:var(--acc); }
+.club-block.away .club-sub { text-align:right; }
+
+.score-wrap { text-align:center; }
+.score-inputs { display:flex; align-items:center; gap:4px; justify-content:center; }
+.score-inputs input {
+  font-family:'Syne',sans-serif; font-size:62px; font-weight:800;
+  color:var(--txt); background:transparent; border:none; outline:none;
+  width:54px; text-align:center; line-height:1;
+}
+.score-inputs input:focus { color:var(--acc); }
+.score-sep { font-family:'Syne',sans-serif; font-size:44px; font-weight:300; color:var(--txt3); line-height:1; }
+.match-date {
+  font-size:11px; color:var(--txt3); text-transform:uppercase; letter-spacing:1.5px;
+  margin-top:6px; text-align:center; background:transparent; border:none; outline:none;
+  width:240px; font-family:'Syne',sans-serif; font-weight:500;
+  border-bottom:1px dashed transparent; transition:border-color .2s;
+  display:block; margin-left:auto; margin-right:auto;
+}
+.match-date:focus { border-bottom-color:var(--acc); }
+
+/* ═══════════════════════════════════════
+   TABS
+═══════════════════════════════════════ */
+.tabs {
+  display:flex; gap:3px; background:var(--surf);
+  border-radius:12px; padding:4px; margin-bottom:20px;
+  border:1px solid var(--bord); box-shadow:var(--shad);
+}
+.tbtn {
+  flex:1; padding:8px 6px; border:none; background:transparent;
+  color:var(--txt2); font-family:'Syne',sans-serif;
+  font-size:10.5px; font-weight:600; letter-spacing:.5px;
+  cursor:pointer; border-radius:9px; transition:all .18s; text-transform:uppercase; white-space:nowrap;
+}
+.tbtn.on { background:var(--acc); color:#fff; }
+.tcontent { display:none; }
+.tcontent.on { display:block; }
+
+/* ═══════════════════════════════════════
+   STITLE
+═══════════════════════════════════════ */
+.stitle {
+  font-family:'Syne',sans-serif; font-size:11px; font-weight:700;
+  letter-spacing:3px; color:var(--acc); text-transform:uppercase;
+  margin-bottom:14px; display:flex; align-items:center; gap:10px;
+}
+.stitle::after { content:''; flex:1; height:1px; background:var(--bord2); }
+
+/* ═══════════════════════════════════════
+   COMPOSITIONS
+═══════════════════════════════════════ */
+.systeme-selector { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.systeme-selector label { font-family:'Syne',sans-serif; font-size:10px; font-weight:600; color:var(--txt3); text-transform:uppercase; letter-spacing:1px; }
+.sys-select {
+  background:var(--surf2); border:1px solid var(--bord2); border-radius:8px;
+  padding:6px 12px; font-family:'Syne',sans-serif; font-size:15px; font-weight:700;
+  letter-spacing:1.5px; color:var(--txt); outline:none; cursor:pointer; transition:border-color .2s;
+}
+.sys-select:focus { border-color:var(--acc); }
+.terrain-svg-card { padding:12px; }
+.terrain-svg { width:100%; display:block; }
+.compo-list-card { padding:18px; margin-top:12px; }
+.compo-list-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.compo-list-header h4 { font-family:'Syne',sans-serif; font-size:11px; font-weight:700; letter-spacing:2.5px; color:var(--txt2); text-transform:uppercase; }
+.team-dot { width:10px; height:10px; border-radius:50%; }
+
+.joueur-row {
+  display:flex; align-items:center; gap:12px;
+  padding:8px 12px; border-radius:10px; cursor:pointer;
+  transition:background .15s; margin-bottom:2px;
+  min-height:48px; /* tablette friendly */
+}
+.joueur-row:hover { background:var(--surf2); }
+.j-avatar {
+  width:36px; height:36px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; overflow:hidden; flex-shrink:0;
+  border:1.5px solid var(--bord2);
+}
+.j-avatar img { width:100%; height:100%; object-fit:cover; }
+.j-info { flex:1; min-width:0; }
+.j-nom { font-family:'Syne',sans-serif; font-size:13px; font-weight:600; color:var(--txt); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.j-sub { font-size:10px; color:var(--txt3); letter-spacing:.5px; font-family:'DM Mono',monospace; }
+.j-star { font-size:16px; opacity:.2; transition:opacity .15s; margin-left:auto; flex-shrink:0; cursor:pointer; border:none; background:none; padding:4px; }
+.j-star.on { opacity:1; color:#D97706; }
+
+/* ═══════════════════════════════════════
+   STATS
+═══════════════════════════════════════ */
+.per-tabs { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+.per-btn {
+  padding:6px 16px; border:1.5px solid var(--bord2); background:transparent;
+  color:var(--txt2); font-family:'Syne',sans-serif; font-size:10px; font-weight:700;
+  letter-spacing:1px; text-transform:uppercase; cursor:pointer; border-radius:7px; transition:all .2s;
+}
+.per-btn.on { border-color:var(--acc); color:var(--acc); background:rgba(26,86,219,.06); }
+.per-content { display:none; }
+.per-content.on { display:block; }
+.stats-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+.stat-card { padding:18px; }
+.stat-lbl { font-family:'Syne',sans-serif; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--txt3); margin-bottom:12px; }
+
+/* Slider */
+.slider-row { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+.slider-val { font-family:'DM Mono',monospace; font-size:18px; font-weight:500; width:50px; text-align:center; }
+.slider-val.h { color:var(--home); }
+.slider-val.a { color:var(--away); }
+.slider-track { flex:1; position:relative; height:7px; background:var(--bg2); border-radius:4px; }
+.bar-h { position:absolute; left:0; top:0; bottom:0; background:var(--home); border-radius:4px; transition:width .2s; }
+.bar-a { position:absolute; right:0; top:0; bottom:0; background:var(--away); border-radius:4px; transition:width .2s; }
+input[type=range].pslider { -webkit-appearance:none; appearance:none; width:100%; height:7px; background:transparent; outline:none; margin:0; position:absolute; inset:0; opacity:0; cursor:pointer; }
+
+/* Compteur */
+.counter-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.counter-block { display:flex; align-items:center; gap:10px; flex:1; }
+.counter-block.away { flex-direction:row-reverse; }
+.cnt-val { font-family:'DM Mono',monospace; font-size:24px; font-weight:500; min-width:34px; text-align:center; }
+.cnt-val.h { color:var(--home); }
+.cnt-val.a { color:var(--away); }
+.cnt-btn {
+  width:32px; height:32px; border-radius:50%; border:1.5px solid var(--bord2);
+  background:transparent; color:var(--txt2); font-size:18px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; transition:all .15s; line-height:1;
+  /* plus grand pour tablette */
+  touch-action:manipulation;
+}
+.cnt-btn:hover { border-color:var(--acc); color:var(--acc); }
+.cnt-sep { font-family:'DM Mono',monospace; font-size:18px; color:var(--txt3); }
+
+/* Champs libres */
+.free-stat input {
+  width:100%; background:var(--surf2); border:1px solid var(--bord);
+  border-radius:8px; padding:9px 12px; font-family:'DM Mono',monospace;
+  font-size:14px; color:var(--txt); outline:none; margin-top:4px; transition:border-color .2s;
+}
+.free-stat input:focus { border-color:var(--acc); }
+
+/* ═══════════════════════════════════════
+   ANALYSE / PF
+═══════════════════════════════════════ */
+.pf-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:20px; }
+.pf-card { padding:18px; border-radius:12px; }
+.pf-card.fort { border-left:3px solid var(--home); }
+.pf-card.faible { border-left:3px solid var(--away); }
+.pf-card h5 { font-family:'Syne',sans-serif; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:2px; margin-bottom:12px; }
+.pf-card.fort h5 { color:var(--home); }
+.pf-card.faible h5 { color:var(--away); }
+.pf-item { display:flex; align-items:center; gap:8px; margin-bottom:7px; }
+.pf-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.fort .pf-dot { background:var(--home); }
+.faible .pf-dot { background:var(--away); }
+.pf-item input { background:transparent; border:none; border-bottom:1px dashed var(--bord2); color:var(--txt); font-family:'DM Sans',sans-serif; font-size:13px; outline:none; width:100%; padding:2px 0; }
+.pf-item input:focus { border-bottom-color:var(--acc); }
+.add-btn { width:100%; padding:7px; background:transparent; border:1px dashed var(--bord2); color:var(--txt3); border-radius:7px; cursor:pointer; font-size:11px; font-family:'DM Sans',sans-serif; margin-top:6px; transition:all .2s; }
+.add-btn:hover { border-color:var(--acc); color:var(--acc); }
+.analyse-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.ab { padding:18px; }
+.ab.full { grid-column:1/-1; }
+.ab h5 { font-family:'Syne',sans-serif; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--txt3); margin-bottom:10px; }
+.ab h5 em { color:var(--acc); font-style:normal; margin-right:5px; }
+.ab textarea { width:100%; background:transparent; border:none; resize:vertical; color:var(--txt); font-family:'DM Sans',sans-serif; font-size:13px; line-height:1.7; min-height:80px; outline:none; }
+.ab textarea::placeholder { color:var(--txt3); }
+
+/* ═══════════════════════════════════════
+   PHOTOS
+═══════════════════════════════════════ */
+.photos-section { margin-top:20px; }
+.photos-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.photo-card { padding:0; overflow:hidden; border-radius:12px; }
+.photo-drop {
+  min-height:150px; background:var(--surf2); border:2px dashed var(--bord2);
+  border-radius:10px; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; cursor:pointer; position:relative; transition:border-color .2s; gap:8px;
+}
+.photo-drop:hover { border-color:var(--acc); }
+.photo-drop .di { font-size:24px; color:var(--txt3); }
+.photo-drop .dt { font-size:11px; color:var(--txt3); text-align:center; line-height:1.5; }
+.photo-drop input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.photo-preview { width:100%; height:150px; object-fit:cover; display:block; border-radius:10px 10px 0 0; }
+.photo-legend { padding:10px 12px; }
+.photo-legend input { width:100%; background:transparent; border:none; border-bottom:1px dashed var(--bord2); color:var(--txt); font-family:'DM Sans',sans-serif; font-size:12px; outline:none; padding:4px 0; }
+.photo-legend input:focus { border-bottom-color:var(--acc); }
+.add-photo-btn { display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; background:transparent; border:1px dashed var(--bord2); color:var(--txt3); border-radius:12px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:12px; transition:all .2s; width:100%; margin-top:12px; }
+.add-photo-btn:hover { border-color:var(--acc); color:var(--acc); }
+
+/* ═══════════════════════════════════════
+   CPA
+═══════════════════════════════════════ */
+.cpa-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.cpa-card { padding:16px; }
+.cpa-card h5 { font-family:'Syne',sans-serif; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--txt3); margin-bottom:8px; }
+.cpa-card h5 em { color:var(--acc); font-style:normal; margin-right:4px; }
+.cpa-card textarea { width:100%; background:transparent; border:none; resize:none; color:var(--txt); font-family:'DM Sans',sans-serif; font-size:12px; line-height:1.6; min-height:88px; outline:none; }
+.cpa-card textarea::placeholder { color:var(--txt3); }
+
+/* ═══════════════════════════════════════
+   TERRAIN DESSIN
+═══════════════════════════════════════ */
+.draw-toolbar {
+  display:flex; align-items:center; gap:8px; padding:10px 14px;
+  background:var(--surf2); border-radius:10px; margin-bottom:12px; flex-wrap:wrap;
+}
+.tool-btn {
+  padding:7px 13px; border:1.5px solid var(--bord2); background:var(--surf);
+  color:var(--txt2); border-radius:8px; cursor:pointer; font-family:'Syne',sans-serif;
+  font-size:11px; font-weight:600; transition:all .15s; display:flex; align-items:center; gap:5px;
+  touch-action:manipulation; min-height:34px;
+}
+.tool-btn:hover { border-color:var(--acc); color:var(--acc); }
+.tool-btn.on { background:var(--acc); color:#fff; border-color:var(--acc); }
+.tool-sep { width:1px; height:24px; background:var(--bord2); }
+.color-btn { width:24px; height:24px; border-radius:50%; border:2.5px solid transparent; cursor:pointer; transition:border-color .15s; flex-shrink:0; touch-action:manipulation; }
+.color-btn.on { border-color:var(--txt); }
+.draw-canvas-wrap { position:relative; border-radius:12px; overflow:hidden; }
+#drawCanvas { display:block; width:100%; cursor:crosshair; touch-action:none; }
+.draw-actions { display:flex; gap:8px; margin-top:10px; }
+.draw-act-btn { padding:8px 18px; border:1px solid var(--bord2); background:transparent; color:var(--txt2); border-radius:8px; cursor:pointer; font-family:'Syne',sans-serif; font-size:11px; font-weight:600; transition:all .2s; touch-action:manipulation; }
+.draw-act-btn:hover { border-color:var(--acc); color:var(--acc); }
+.draw-act-btn.danger:hover { border-color:var(--away); color:var(--away); }
+
+/* ═══════════════════════════════════════
+   JOUEURS CLÉS
+═══════════════════════════════════════ */
+.jcles-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px; }
+.jcle-card { padding:16px; }
+.jcle-nom-in { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; display:block; width:100%; background:transparent; border:none; border-bottom:1px dashed var(--bord2); padding-bottom:6px; margin-bottom:8px; color:var(--txt); outline:none; }
+.jcle-nom-in:focus { border-bottom-color:var(--acc); }
+.jcle-pos-in { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:1px; color:var(--acc); font-weight:500; background:transparent; border:none; outline:none; width:100%; }
+.jcle-ta { font-size:12px; color:var(--txt2); resize:none; min-height:52px; line-height:1.6; margin-top:8px; width:100%; background:transparent; border:none; outline:none; font-family:'DM Sans',sans-serif; }
+.jcle-ta::placeholder { color:var(--txt3); }
+
+/* ═══════════════════════════════════════
+   SYNTHÈSE
+═══════════════════════════════════════ */
+.notation-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:20px; }
+.note-card { padding:14px 12px; text-align:center; }
+.note-lbl { font-family:'Syne',sans-serif; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--txt3); margin-bottom:8px; }
+.note-in { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:var(--acc); background:transparent; border:none; outline:none; width:100%; text-align:center; line-height:1; }
+.note-in:focus { color:var(--txt); }
+
+/* ═══════════════════════════════════════
+   MODAL
+═══════════════════════════════════════ */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1000; align-items:center; justify-content:center; padding:16px; }
+.modal-overlay.on { display:flex; }
+.modal { background:var(--surf); border-radius:16px; border:1px solid var(--bord2); box-shadow:0 20px 60px rgba(0,0,0,0.18); padding:28px; width:100%; max-width:340px; position:relative; }
+.modal h3 { font-family:'Syne',sans-serif; font-size:14px; font-weight:800; letter-spacing:2px; margin-bottom:20px; color:var(--txt); text-transform:uppercase; }
+.modal-photo { width:84px; height:84px; border-radius:50%; border:2px solid var(--bord2); background:var(--surf2); display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; margin:0 auto 20px; position:relative; }
+.modal-photo img { width:100%; height:100%; object-fit:cover; }
+.modal-photo .ph { font-size:10px; color:var(--txt3); text-align:center; line-height:1.4; }
+.modal-photo input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.mfield { margin-bottom:14px; }
+.mfield label { display:block; font-family:'Syne',sans-serif; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--txt3); margin-bottom:5px; }
+.mfield input, .mfield select { width:100%; padding:10px 12px; background:var(--surf2); border:1px solid var(--bord2); border-radius:8px; color:var(--txt); font-family:'DM Sans',sans-serif; font-size:14px; outline:none; transition:border-color .2s; min-height:44px; }
+.mfield input:focus, .mfield select:focus { border-color:var(--acc); }
+.modal-actions { display:flex; gap:10px; margin-top:20px; }
+.btn-primary { flex:1; padding:11px; background:var(--acc); color:#fff; border:none; border-radius:9px; font-family:'Syne',sans-serif; font-size:12px; font-weight:700; cursor:pointer; transition:background .15s; min-height:44px; }
+.btn-primary:hover { background:var(--acc2); }
+.btn-sec { padding:11px 16px; background:var(--surf2); color:var(--txt2); border:1px solid var(--bord2); border-radius:9px; font-family:'Syne',sans-serif; font-size:12px; font-weight:600; cursor:pointer; min-height:44px; }
+.modal-close { position:absolute; top:14px; right:16px; background:none; border:none; font-size:22px; color:var(--txt3); cursor:pointer; line-height:1; padding:4px; }
+
+/* ═══════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════ */
+.rapport-footer { display:flex; align-items:center; justify-content:space-between; padding:22px 0; border-top:1px solid var(--bord2); margin-top:32px; }
+.footer-brand { font-family:'Syne',sans-serif; font-size:11px; font-weight:700; letter-spacing:3px; color:var(--txt3); text-transform:uppercase; }
+.footer-brand span { color:var(--acc); }
+.footer-brand input { background:transparent; border:none; font-family:'Syne',sans-serif; font-size:11px; font-weight:700; letter-spacing:3px; color:var(--txt3); outline:none; width:160px; text-transform:uppercase; }
+.footer-right { font-family:'DM Mono',monospace; font-size:11px; color:var(--txt3); }
+
+/* FAB */
+.fab { position:fixed; bottom:28px; right:28px; background:var(--acc); color:#fff; border:none; font-family:'Syne',sans-serif; font-size:12px; font-weight:700; letter-spacing:2px; padding:14px 28px; border-radius:50px; cursor:pointer; z-index:500; box-shadow:0 8px 28px rgba(26,86,219,0.35); transition:transform .15s,box-shadow .15s; text-transform:uppercase; touch-action:manipulation; }
+.fab:hover { transform:translateY(-2px); box-shadow:0 12px 36px rgba(26,86,219,.45); }
+.fab:active { transform:scale(.97); }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     COUVERTURE C — TERRAIN GRAPHIQUE (print)
+══════════════════════════════════════ -->
+<div class="cover-page" id="coverPage">
+  <div class="cover-pitch-zone">
+    <svg viewBox="0 0 800 420" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <rect width="800" height="420" fill="#0D1F13"/>
+      <rect x="0" y="0" width="800" height="60" fill="#122918" opacity=".7"/>
+      <rect x="0" y="120" width="800" height="60" fill="#122918" opacity=".7"/>
+      <rect x="0" y="240" width="800" height="60" fill="#122918" opacity=".7"/>
+      <rect x="0" y="360" width="800" height="60" fill="#122918" opacity=".7"/>
+      <rect x="20" y="18" width="760" height="384" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="1.5"/>
+      <line x1="20" y1="210" x2="780" y2="210" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+      <circle cx="400" cy="210" r="70" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+      <circle cx="400" cy="210" r="4" fill="rgba(255,255,255,.3)"/>
+      <rect x="240" y="18" width="320" height="90" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+      <rect x="320" y="18" width="160" height="42" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+      <rect x="240" y="312" width="320" height="90" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+      <rect x="320" y="360" width="160" height="42" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+      <circle cx="400" cy="54" r="4" fill="rgba(255,255,255,.25)"/>
+      <circle cx="400" cy="366" r="4" fill="rgba(255,255,255,.25)"/>
+      <!-- Jetons domicile (vert) -->
+      <circle cx="130" cy="160" r="16" fill="#15803D" opacity=".9"/>
+      <circle cx="270" cy="148" r="16" fill="#15803D" opacity=".9"/>
+      <circle cx="400" cy="140" r="16" fill="#15803D" opacity=".9"/>
+      <circle cx="530" cy="148" r="16" fill="#15803D" opacity=".9"/>
+      <circle cx="670" cy="160" r="16" fill="#15803D" opacity=".9"/>
+      <circle cx="220" cy="230" r="16" fill="#15803D" opacity=".85"/>
+      <circle cx="400" cy="220" r="16" fill="#15803D" opacity=".85"/>
+      <circle cx="580" cy="230" r="16" fill="#15803D" opacity=".85"/>
+      <circle cx="300" cy="310" r="16" fill="#15803D" opacity=".85"/>
+      <circle cx="400" cy="290" r="16" fill="#15803D" opacity=".85"/>
+      <circle cx="500" cy="310" r="16" fill="#15803D" opacity=".85"/>
+      <!-- Jetons extérieur (rouge) -->
+      <circle cx="130" cy="280" r="16" fill="#B91C1C" opacity=".85"/>
+      <circle cx="280" cy="370" r="16" fill="#B91C1C" opacity=".85"/>
+      <circle cx="400" cy="380" r="16" fill="#B91C1C" opacity=".85"/>
+      <circle cx="520" cy="370" r="16" fill="#B91C1C" opacity=".85"/>
+      <circle cx="670" cy="280" r="16" fill="#B91C1C" opacity=".85"/>
+      <!-- Flèches action -->
+      <defs>
+        <marker id="aw" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto">
+          <path d="M1 1L7 4L1 7" fill="none" stroke="#22C55E" stroke-width="1.5"/>
+        </marker>
+        <linearGradient id="fade2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0D1F13" stop-opacity="0"/>
+          <stop offset="100%" stop-color="#0D1F13" stop-opacity="1"/>
+        </linearGradient>
+      </defs>
+      <path d="M400 236 Q440 260 500 310" stroke="#22C55E" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#aw)" opacity=".8"/>
+      <path d="M220 230 Q310 250 300 310" stroke="#22C55E" stroke-width="2" fill="none" marker-end="url(#aw)" opacity=".7"/>
+      <rect x="0" y="280" width="800" height="140" fill="url(#fade2)"/>
+    </svg>
+  </div>
+  <div class="cover-body">
+    <div class="cover-tag">Rapport d'analyse · Analyse vidéo football</div>
+    <div class="cover-matchup">
+      <div class="cover-club">
+        <div class="cover-club-logo" id="cvLogoH"><span class="hint">Logo</span><input type="file" accept="image/*" onchange="loadCoverLogo(this,'cvLogoH')"></div>
+        <input class="cover-club-name" id="cvNameH" value="CLUB DOMICILE">
+      </div>
+      <div class="cover-score-block">
+        <div class="cover-score">
+          <input type="number" id="cvSH" value="0" min="0" max="99">
+          <span class="cover-score-sep">–</span>
+          <input type="number" id="cvSA" value="0" min="0" max="99">
+        </div>
+        <div class="cover-score-sub">Score final</div>
+      </div>
+      <div class="cover-club">
+        <div class="cover-club-logo" id="cvLogoA"><span class="hint">Logo</span><input type="file" accept="image/*" onchange="loadCoverLogo(this,'cvLogoA')"></div>
+        <input class="cover-club-name" id="cvNameA" value="CLUB EXTÉRIEUR">
+      </div>
+    </div>
+    <div class="cover-divider"></div>
+    <div class="cover-meta">
+      <div class="cover-meta-item"><span class="cover-meta-label">Date</span><input class="cover-meta-val" id="cmDate" placeholder="JJ/MM/AAAA" style="width:110px"></div>
+      <div class="cover-meta-item"><span class="cover-meta-label">Compétition</span><input class="cover-meta-val" id="cmComp" placeholder="Championnat N2" style="width:160px"></div>
+      <div class="cover-meta-item"><span class="cover-meta-label">Journée</span><input class="cover-meta-val" id="cmJour" placeholder="J14" style="width:60px"></div>
+      <div class="cover-meta-item"><span class="cover-meta-label">Lieu</span><input class="cover-meta-val" id="cmLieu" placeholder="Stade — Ville" style="width:140px"></div>
+    </div>
+    <div class="cover-bottom">
+      <input class="cover-analyst" id="cmAnalyst" placeholder="NOM ANALYSTE · CLUB" style="width:280px">
+      <div class="cover-acc-line"></div>
+      <span class="cover-date-print" id="coverDate"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     APERÇU PDF (overlay modal)
+══════════════════════════════════════ -->
+<div class="pdf-preview-overlay" id="pdfPreviewOverlay">
+  <div class="pdf-preview-modal">
+    <div class="pdf-preview-header">
+      <h3>Aperçu avant impression</h3>
+      <div class="pdf-preview-actions">
+        <button class="btn-sec" onclick="closePdfPreview()">Fermer</button>
+        <button class="btn-primary" onclick="doPrint()" style="padding:10px 20px">Imprimer / Enregistrer PDF</button>
+      </div>
+    </div>
+    <div class="pdf-preview-body" id="pdfPreviewBody"></div>
+  </div>
+</div>
+
+<div class="page">
+
+<!-- ══ COUVERTURE — onglet édition ══ -->
+<div id="tab-cover" class="tcontent" style="display:none">
+  <div class="stitle">Couverture du rapport</div>
+  <div class="cover-preview">
+    <div class="cover-pitch-zone">
+      <svg viewBox="0 0 800 420" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <rect width="800" height="420" fill="#0D1F13"/>
+        <rect x="0" y="0" width="800" height="60" fill="#122918" opacity=".7"/>
+        <rect x="0" y="120" width="800" height="60" fill="#122918" opacity=".7"/>
+        <rect x="0" y="240" width="800" height="60" fill="#122918" opacity=".7"/>
+        <rect x="0" y="360" width="800" height="60" fill="#122918" opacity=".7"/>
+        <rect x="20" y="18" width="760" height="384" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="1.5"/>
+        <line x1="20" y1="210" x2="780" y2="210" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+        <circle cx="400" cy="210" r="70" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+        <circle cx="400" cy="210" r="4" fill="rgba(255,255,255,.3)"/>
+        <rect x="240" y="18" width="320" height="90" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+        <rect x="240" y="312" width="320" height="90" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+        <circle cx="130" cy="160" r="16" fill="#15803D" opacity=".9"/>
+        <circle cx="270" cy="148" r="16" fill="#15803D" opacity=".9"/>
+        <circle cx="400" cy="140" r="16" fill="#15803D" opacity=".9"/>
+        <circle cx="530" cy="148" r="16" fill="#15803D" opacity=".9"/>
+        <circle cx="670" cy="160" r="16" fill="#15803D" opacity=".9"/>
+        <circle cx="220" cy="230" r="16" fill="#15803D" opacity=".85"/>
+        <circle cx="400" cy="220" r="16" fill="#15803D" opacity=".85"/>
+        <circle cx="580" cy="230" r="16" fill="#15803D" opacity=".85"/>
+        <circle cx="300" cy="310" r="16" fill="#15803D" opacity=".85"/>
+        <circle cx="400" cy="290" r="16" fill="#15803D" opacity=".85"/>
+        <circle cx="500" cy="310" r="16" fill="#15803D" opacity=".85"/>
+        <circle cx="130" cy="280" r="16" fill="#B91C1C" opacity=".85"/>
+        <circle cx="280" cy="370" r="16" fill="#B91C1C" opacity=".85"/>
+        <circle cx="400" cy="380" r="16" fill="#B91C1C" opacity=".85"/>
+        <circle cx="520" cy="370" r="16" fill="#B91C1C" opacity=".85"/>
+        <circle cx="670" cy="280" r="16" fill="#B91C1C" opacity=".85"/>
+        <defs>
+          <marker id="aw2" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto"><path d="M1 1L7 4L1 7" fill="none" stroke="#22C55E" stroke-width="1.5"/></marker>
+          <linearGradient id="fd2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0D1F13" stop-opacity="0"/><stop offset="100%" stop-color="#0D1F13" stop-opacity="1"/></linearGradient>
+        </defs>
+        <path d="M400 236 Q440 260 500 310" stroke="#22C55E" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#aw2)" opacity=".8"/>
+        <path d="M220 230 Q310 250 300 310" stroke="#22C55E" stroke-width="2" fill="none" marker-end="url(#aw2)" opacity=".7"/>
+        <rect x="0" y="280" width="800" height="140" fill="url(#fd2)"/>
+      </svg>
+    </div>
+    <div class="cover-body">
+      <div class="cover-tag">Rapport d'analyse · Analyse vidéo football</div>
+      <div class="cover-matchup">
+        <div class="cover-club">
+          <div class="cover-club-logo" id="cvLogoH2" style="width:48px;height:48px"><span class="hint">Logo</span></div>
+          <span id="cvPreviewH" style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:rgba(255,255,255,.85)">CLUB DOMICILE</span>
+        </div>
+        <div class="cover-score-block">
+          <div class="cover-score" style="font-size:36px">
+            <span id="cvPreviewSH">0</span>
+            <span class="cover-score-sep" style="font-size:26px">–</span>
+            <span id="cvPreviewSA">0</span>
+          </div>
+        </div>
+        <div class="cover-club">
+          <div class="cover-club-logo" id="cvLogoA2" style="width:48px;height:48px"><span class="hint">Logo</span></div>
+          <span id="cvPreviewA" style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:rgba(255,255,255,.85)">CLUB EXTÉRIEUR</span>
+        </div>
+      </div>
+      <div class="cover-divider"></div>
+      <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:12px">
+        <div><div class="cover-meta-label">Date</div><div style="font-size:11px;color:rgba(255,255,255,.6)" id="cpDate">—</div></div>
+        <div><div class="cover-meta-label">Compétition</div><div style="font-size:11px;color:rgba(255,255,255,.6)" id="cpComp">—</div></div>
+        <div><div class="cover-meta-label">Lieu</div><div style="font-size:11px;color:rgba(255,255,255,.6)" id="cpLieu">—</div></div>
+      </div>
+      <div class="cover-bottom">
+        <span style="font-family:'Syne',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.3);text-transform:uppercase" id="cpAnalyst">ANALYSTE</span>
+        <div class="cover-acc-line"></div>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.2)" id="cpDateFoot"></span>
+      </div>
+    </div>
+  </div>
+  <p style="font-size:12px;color:var(--txt3);text-align:center;margin-bottom:20px">Renseignez les champs ci-dessous — ils s'affichent en temps réel sur la couverture</p>
+  <div class="card" style="padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div class="mfield"><label>Date du match</label><input oninput="syncCoverField('cmDate',this.value,'cpDate')" placeholder="JJ/MM/AAAA"></div>
+    <div class="mfield"><label>Compétition</label><input oninput="syncCoverField('cmComp',this.value,'cpComp')" placeholder="Championnat N2"></div>
+    <div class="mfield"><label>Journée</label><input oninput="syncCoverField('cmJour',this.value,null)" placeholder="J14"></div>
+    <div class="mfield"><label>Lieu</label><input oninput="syncCoverField('cmLieu',this.value,'cpLieu')" placeholder="Stade — Ville"></div>
+    <div class="mfield" style="grid-column:1/-1"><label>Nom de l'analyste</label><input oninput="syncCoverField('cmAnalyst',this.value,'cpAnalyst')" placeholder="Prénom NOM · Club"></div>
+  </div>
+</div>
+
+<!-- HEADER SCREEN -->
+<header class="header">
+  <div class="club-block">
+    <div class="logo-wrap" id="logoHome"><span class="hint">Logo</span><input type="file" accept="image/*" onchange="loadLogo(this,'logoHome','home')"></div>
+    <div>
+      <input class="club-name" id="homeName" value="CLUB DOMICILE" maxlength="20" oninput="syncCover()">
+      <input class="club-sub" value="Ville · Championnat">
+    </div>
+  </div>
+  <div class="score-wrap">
+    <div class="score-inputs">
+      <input type="number" id="sH" value="0" min="0" max="99" oninput="syncCover()">
+      <span class="score-sep">–</span>
+      <input type="number" id="sA" value="0" min="0" max="99" oninput="syncCover()">
+    </div>
+    <input class="match-date" value="JJ/MM/AAAA · Compétition · J00">
+  </div>
+  <div class="club-block away">
+    <div class="logo-wrap" id="logoAway"><span class="hint">Logo</span><input type="file" accept="image/*" onchange="loadLogo(this,'logoAway','away')"></div>
+    <div style="text-align:right">
+      <input class="club-name" id="awayName" value="CLUB EXTÉRIEUR" maxlength="20" style="text-align:right" oninput="syncCover()">
+      <input class="club-sub" value="Ville · Championnat" style="text-align:right">
+    </div>
+  </div>
+</header>
+
+<!-- TABS -->
+<div class="tabs no-print">
+  <button class="tbtn" onclick="showTab('cover',this)">Couverture</button>
+  <button class="tbtn on" onclick="showTab('compo',this)">Compos</button>
+  <button class="tbtn" onclick="showTab('stats',this)">Stats</button>
+  <button class="tbtn" onclick="showTab('tactique',this)">Tactique</button>
+  <button class="tbtn" onclick="showTab('cpa',this)">CPA</button>
+  <button class="tbtn" onclick="showTab('dessin',this)">Dessin</button>
+  <button class="tbtn" onclick="showTab('joueurs',this)">Joueurs</button>
+  <button class="tbtn" onclick="showTab('synthese',this)">Synthèse</button>
+</div>
+
+<!-- ══ COMPOSITIONS ══ -->
+<div class="tcontent on" id="tab-compo">
+  <div class="print-header"><div class="ph-left"><span class="ph-title">Compositions</span></div><span class="ph-right" id="phDate"></span></div>
+  <div class="stitle">Domicile</div>
+  <div class="systeme-selector"><label>Système</label>
+    <select class="sys-select" id="sysHome" onchange="updateTerrain('home')">
+      <option>4-3-3</option><option>4-4-2</option><option>4-2-3-1</option>
+      <option>3-5-2</option><option>3-4-3</option><option>5-3-2</option>
+      <option>4-1-4-1</option><option>4-3-2-1</option><option>4-2-2-2</option><option>3-4-2-1</option>
+    </select>
+  </div>
+  <div class="card terrain-svg-card"><svg id="terrainHome" viewBox="0 0 480 340" class="terrain-svg"></svg></div>
+  <div class="card compo-list-card">
+    <div class="compo-list-header"><h4>Composition — Domicile</h4><div class="team-dot" style="background:var(--home)"></div></div>
+    <div id="listHome"></div>
+  </div>
+  <div style="margin-top:28px">
+    <div class="stitle">Extérieur</div>
+    <div class="systeme-selector"><label>Système</label>
+      <select class="sys-select" id="sysAway" onchange="updateTerrain('away')">
+        <option>4-3-3</option><option selected>4-4-2</option><option>4-2-3-1</option>
+        <option>3-5-2</option><option>3-4-3</option><option>5-3-2</option>
+        <option>4-1-4-1</option><option>4-3-2-1</option><option>4-2-2-2</option><option>3-4-2-1</option>
+      </select>
+    </div>
+    <div class="card terrain-svg-card"><svg id="terrainAway" viewBox="0 0 480 340" class="terrain-svg"></svg></div>
+    <div class="card compo-list-card">
+      <div class="compo-list-header"><h4>Composition — Extérieur</h4><div class="team-dot" style="background:var(--away)"></div></div>
+      <div id="listAway"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ STATS ══ -->
+<div class="tcontent" id="tab-stats">
+  <div class="print-header"><div class="ph-left"><span class="ph-title">Statistiques</span></div><span class="ph-right"></span></div>
+  <div class="per-tabs no-print">
+    <button class="per-btn on" onclick="showPer(this,'per-global')">Match complet</button>
+    <button class="per-btn" onclick="showPer(this,'per-mt1')">1re mi-temps</button>
+    <button class="per-btn" onclick="showPer(this,'per-mt2')">2e mi-temps</button>
+    <button class="per-btn" onclick="showPer(this,'per-prol')">Prolongations</button>
+  </div>
+  <div class="per-content on" id="per-global"><div class="stitle">Match complet</div><div id="sg" class="stats-grid"></div><div class="photos-section"><div class="stitle" style="margin-top:20px">Photos — Match complet</div><div class="photos-grid" id="pg"></div><button class="add-photo-btn no-print" onclick="addPhoto('pg')">+ Photo</button></div></div>
+  <div class="per-content" id="per-mt1"><div class="stitle">1re mi-temps</div><div id="sm1" class="stats-grid"></div><div class="photos-section"><div class="stitle" style="margin-top:20px">Photos — 1re mi-temps</div><div class="photos-grid" id="pm1"></div><button class="add-photo-btn no-print" onclick="addPhoto('pm1')">+ Photo</button></div></div>
+  <div class="per-content" id="per-mt2"><div class="stitle">2e mi-temps</div><div id="sm2" class="stats-grid"></div><div class="photos-section"><div class="stitle" style="margin-top:20px">Photos — 2e mi-temps</div><div class="photos-grid" id="pm2"></div><button class="add-photo-btn no-print" onclick="addPhoto('pm2')">+ Photo</button></div></div>
+  <div class="per-content" id="per-prol"><div class="stitle">Prolongations</div><div id="spr" class="stats-grid"></div><div class="photos-section"><div class="stitle" style="margin-top:20px">Photos — Prolongations</div><div class="photos-grid" id="ppr"></div><button class="add-photo-btn no-print" onclick="addPhoto('ppr')">+ Photo</button></div></div>
+</div>
+
+<!-- ══ TACTIQUE ══ -->
+<div class="tcontent" id="tab-tactique">
+  <div class="print-header"><div class="ph-left"><span class="ph-title">Analyse Tactique</span></div><span class="ph-right"></span></div>
+  <div class="stitle">Points forts &amp; faibles</div>
+  <div class="pf-grid">
+    <div class="pf-card fort card"><h5>Points forts — Domicile</h5><div id="pfFH"><div class="pf-item"><span class="pf-dot"></span><input placeholder="Ex : Pressing haut structuré"></div><div class="pf-item"><span class="pf-dot"></span><input placeholder="Ex : Transitions rapides"></div></div><button class="add-btn" onclick="addPF('pfFH','fort')">+ Ajouter</button></div>
+    <div class="pf-card faible card"><h5>Points faibles — Domicile</h5><div id="pfFaH"><div class="pf-item"><span class="pf-dot"></span><input placeholder="Ex : Vulnérable en contre"></div></div><button class="add-btn" onclick="addPF('pfFaH','faible')">+ Ajouter</button></div>
+    <div class="pf-card fort card"><h5>Points forts — Extérieur</h5><div id="pfFA"><div class="pf-item"><span class="pf-dot"></span><input placeholder="Ex : Bloc bas compact"></div></div><button class="add-btn" onclick="addPF('pfFA','fort')">+ Ajouter</button></div>
+    <div class="pf-card faible card"><h5>Points faibles — Extérieur</h5><div id="pfFaA"><div class="pf-item"><span class="pf-dot"></span><input placeholder="Ex : Relance longue imprécise"></div></div><button class="add-btn" onclick="addPF('pfFaA','faible')">+ Ajouter</button></div>
+  </div>
+  <div class="stitle" style="margin-top:20px">Analyse détaillée</div>
+  <div class="analyse-grid">
+    <div class="ab card"><h5><em>▶</em>Type d'attaque — Dom.</h5><textarea placeholder="Jeu positionnel, contre-attaque, jeu direct..."></textarea></div>
+    <div class="ab card"><h5><em>▶</em>Type d'attaque — Ext.</h5><textarea placeholder="Décrire le type d'attaque adverse..."></textarea></div>
+    <div class="ab card"><h5><em>⇄</em>Transitions offensives</h5><textarea placeholder="Vitesse, déclencheurs, organisation..."></textarea></div>
+    <div class="ab card"><h5><em>⇄</em>Transitions défensives</h5><textarea placeholder="Réaction à la perte, repli, zones..."></textarea></div>
+    <div class="ab full card"><h5><em>◈</em>Spécificités tactiques globales</h5><textarea style="min-height:110px" placeholder="Système hybride, pressing zones, tempo..."></textarea></div>
+  </div>
+  <div class="photos-section"><div class="stitle" style="margin-top:20px">Photos — Tactique</div><div class="photos-grid" id="pt"></div><button class="add-photo-btn no-print" onclick="addPhoto('pt')">+ Photo</button></div>
+</div>
+
+<!-- ══ CPA ══ -->
+<div class="tcontent" id="tab-cpa">
+  <div class="print-header"><div class="ph-left"><span class="ph-title">CPA &amp; Set Pieces</span></div><span class="ph-right"></span></div>
+  <div class="stitle">Coups de pied arrêtés</div>
+  <div class="cpa-grid">
+    <div class="cpa-card card"><h5><em>↗</em>Corners offensifs</h5><textarea placeholder="Inswing/outswing, zone, bloqueurs, décrocheurs, variations..."></textarea></div>
+    <div class="cpa-card card"><h5><em>↙</em>Corners défensifs</h5><textarea placeholder="Zonale/individuelle, bloqueurs, sortie GK..."></textarea></div>
+    <div class="cpa-card card"><h5><em>↗</em>CF offensifs</h5><textarea placeholder="Tireur, mur adverse, tir direct/centre, variantes..."></textarea></div>
+    <div class="cpa-card card"><h5><em>↙</em>CF défensifs</h5><textarea placeholder="Mur, sauteurs, position GK..."></textarea></div>
+    <div class="cpa-card card"><h5><em>◎</em>Penalties</h5><textarea placeholder="Tireur, côté, comportement GK..."></textarea></div>
+    <div class="cpa-card card"><h5><em>⇢</em>Touches offensives</h5><textarea placeholder="Longues/courtes, joueurs ciblés..."></textarea></div>
+    <div class="cpa-card card"><h5><em>⇢</em>Touches défensives</h5><textarea placeholder="Organisation, pressing, récupération..."></textarea></div>
+    <div class="cpa-card card"><h5><em>◈</em>Coups d'envoi</h5><textarea placeholder="Pressing, jeu long, conservation..."></textarea></div>
+  </div>
+  <div class="photos-section"><div class="stitle" style="margin-top:20px">Photos — CPA</div><div class="photos-grid" id="pc"></div><button class="add-photo-btn no-print" onclick="addPhoto('pc')">+ Photo</button></div>
+</div>
+
+<!-- ══ TERRAIN DESSIN ══ -->
+<div class="tcontent" id="tab-dessin">
+  <div class="print-header"><div class="ph-left"><span class="ph-title">Schémas Tactiques</span></div><span class="ph-right"></span></div>
+  <div class="stitle">Terrain interactif</div>
+  <div class="draw-toolbar no-print">
+    <button class="tool-btn on" id="tool-select" onclick="setTool('select')">✦ Sél.</button>
+    <button class="tool-btn" id="tool-arrow" onclick="setTool('arrow')">→ Flèche</button>
+    <button class="tool-btn" id="tool-pass" onclick="setTool('pass')">~ Passe</button>
+    <button class="tool-btn" id="tool-zone" onclick="setTool('zone')">▭ Zone</button>
+    <button class="tool-btn" id="tool-circle" onclick="setTool('circle')">◯ Cercle</button>
+    <button class="tool-btn" id="tool-jeton" onclick="setTool('jeton')">● Jeton</button>
+    <button class="tool-btn" id="tool-text" onclick="setTool('text')">T Texte</button>
+    <div class="tool-sep"></div>
+    <div class="color-btn on" style="background:#15803D" onclick="setColor('#15803D',this)" title="Vert"></div>
+    <div class="color-btn" style="background:#B91C1C" onclick="setColor('#B91C1C',this)" title="Rouge"></div>
+    <div class="color-btn" style="background:#1A56DB" onclick="setColor('#1A56DB',this)" title="Bleu"></div>
+    <div class="color-btn" style="background:#D97706" onclick="setColor('#D97706',this)" title="Orange"></div>
+    <div class="color-btn" style="background:#ffffff;outline:1px solid #ccc" onclick="setColor('#ffffff',this)" title="Blanc"></div>
+    <div class="tool-sep"></div>
+    <select id="lineWidth" style="padding:6px 10px;border:1.5px solid var(--bord2);border-radius:7px;background:var(--surf);font-family:'Syne',sans-serif;font-size:11px;font-weight:600;color:var(--txt2);outline:none;min-height:34px">
+      <option value="2">Fin</option><option value="3" selected>Normal</option><option value="5">Épais</option>
+    </select>
+  </div>
+  <div class="draw-canvas-wrap card" style="padding:0"><canvas id="drawCanvas"></canvas></div>
+  <div class="draw-actions no-print">
+    <button class="draw-act-btn" onclick="drawUndo()">↩ Annuler</button>
+    <button class="draw-act-btn danger" onclick="drawClear()">✕ Effacer</button>
+    <button class="draw-act-btn" onclick="exportDrawPNG()" style="margin-left:auto">↓ Image PNG</button>
+  </div>
+  <div class="photos-section"><div class="stitle" style="margin-top:20px">Photos — Schémas</div><div class="photos-grid" id="pd"></div><button class="add-photo-btn no-print" onclick="addPhoto('pd')">+ Photo</button></div>
+</div>
+
+<!-- ══ JOUEURS CLÉS ══ -->
+<div class="tcontent" id="tab-joueurs">
+  <div class="print-header"><div class="ph-left"><span class="ph-title">Joueurs Clés</span></div><span class="ph-right"></span></div>
+  <div class="stitle">Joueurs clés — Domicile</div>
+  <div class="jcles-grid">
+    <div class="jcle-card card"><input class="jcle-nom-in" placeholder="Nom du joueur"><input class="jcle-pos-in" placeholder="POSTE · N°"><textarea class="jcle-ta" placeholder="Rôle, actions clés, influence, points techniques..."></textarea></div>
+    <div class="jcle-card card"><input class="jcle-nom-in" placeholder="Nom du joueur"><input class="jcle-pos-in" placeholder="POSTE · N°"><textarea class="jcle-ta" placeholder="Rôle, actions clés..."></textarea></div>
+    <div class="jcle-card card"><input class="jcle-nom-in" placeholder="Nom du joueur"><input class="jcle-pos-in" placeholder="POSTE · N°"><textarea class="jcle-ta" placeholder="Rôle, actions clés..."></textarea></div>
+  </div>
+  <div class="stitle" style="margin-top:20px">Joueurs clés — Extérieur</div>
+  <div class="jcles-grid">
+    <div class="jcle-card card" style="border-color:rgba(185,28,28,.15)"><input class="jcle-nom-in" placeholder="Nom du joueur"><input class="jcle-pos-in" placeholder="POSTE · N°" style="color:var(--away)"><textarea class="jcle-ta" placeholder="Rôle, actions clés..."></textarea></div>
+    <div class="jcle-card card" style="border-color:rgba(185,28,28,.15)"><input class="jcle-nom-in" placeholder="Nom du joueur"><input class="jcle-pos-in" placeholder="POSTE · N°" style="color:var(--away)"><textarea class="jcle-ta" placeholder="Rôle, actions clés..."></textarea></div>
+    <div class="jcle-card card" style="border-color:rgba(185,28,28,.15)"><input class="jcle-nom-in" placeholder="Nom du joueur"><input class="jcle-pos-in" placeholder="POSTE · N°" style="color:var(--away)"><textarea class="jcle-ta" placeholder="Rôle, actions clés..."></textarea></div>
+  </div>
+</div>
+
+<!-- ══ SYNTHÈSE ══ -->
+<div class="tcontent" id="tab-synthese">
+  <div class="print-header"><div class="ph-left"><span class="ph-title">Synthèse</span></div><span class="ph-right"></span></div>
+  <div class="stitle">Notation — Domicile</div>
+  <div class="notation-grid" style="margin-bottom:20px">
+    <div class="note-card card"><div class="note-lbl">Organisation</div><input class="note-in" type="number" min="0" max="10" placeholder="—"></div>
+    <div class="note-card card"><div class="note-lbl">Attaque</div><input class="note-in" type="number" min="0" max="10" placeholder="—"></div>
+    <div class="note-card card"><div class="note-lbl">Défense</div><input class="note-in" type="number" min="0" max="10" placeholder="—"></div>
+    <div class="note-card card"><div class="note-lbl">Transitions</div><input class="note-in" type="number" min="0" max="10" placeholder="—"></div>
+    <div class="note-card card"><div class="note-lbl">CPA</div><input class="note-in" type="number" min="0" max="10" placeholder="—"></div>
+  </div>
+  <div class="stitle">Notation — Extérieur</div>
+  <div class="notation-grid" style="margin-bottom:24px">
+    <div class="note-card card"><div class="note-lbl">Organisation</div><input class="note-in" type="number" min="0" max="10" placeholder="—" style="color:var(--away)"></div>
+    <div class="note-card card"><div class="note-lbl">Attaque</div><input class="note-in" type="number" min="0" max="10" placeholder="—" style="color:var(--away)"></div>
+    <div class="note-card card"><div class="note-lbl">Défense</div><input class="note-in" type="number" min="0" max="10" placeholder="—" style="color:var(--away)"></div>
+    <div class="note-card card"><div class="note-lbl">Transitions</div><input class="note-in" type="number" min="0" max="10" placeholder="—" style="color:var(--away)"></div>
+    <div class="note-card card"><div class="note-lbl">CPA</div><input class="note-in" type="number" min="0" max="10" placeholder="—" style="color:var(--away)"></div>
+  </div>
+  <div class="stitle">Synthèse de l'analyste</div>
+  <div class="analyse-grid">
+    <div class="ab full card"><h5><em>◈</em>Conclusion générale</h5><textarea style="min-height:130px" placeholder="Dynamique de jeu, moments clés, enseignements tactiques, recommandations..."></textarea></div>
+    <div class="ab card"><h5><em>▶</em>À retenir — Domicile</h5><textarea placeholder="Points essentiels pour les prochaines rencontres..."></textarea></div>
+    <div class="ab card"><h5><em>▶</em>À retenir — Extérieur</h5><textarea placeholder="Points essentiels sur l'équipe adverse..."></textarea></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="rapport-footer">
+  <div class="footer-brand">Rapport Match <span>·</span> <input value="ANALYSTE · 2025"></div>
+  <div class="footer-right" id="footerDate"></div>
+</footer>
+</div>
+
+<!-- MODAL JOUEUR -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <h3>Modifier le joueur</h3>
+    <div class="modal-photo" id="modalPhotoWrap"><span class="ph">Photo<br>joueur</span><input type="file" accept="image/*" onchange="loadPlayerPhoto(this)"></div>
+    <div class="mfield"><label>Numéro</label><input id="mNum" type="number" min="1" max="99" placeholder="10"></div>
+    <div class="mfield"><label>Nom</label><input id="mNom" type="text" placeholder="Nom Prénom" maxlength="22"></div>
+    <div class="mfield"><label>Poste</label>
+      <select id="mPoste">
+        <option value="GK">GK — Gardien</option><option value="DC">DC — Défenseur central</option>
+        <option value="DD">DD — Défenseur droit</option><option value="DG">DG — Défenseur gauche</option>
+        <option value="PD">PD — Piston droit</option><option value="PG">PG — Piston gauche</option>
+        <option value="LB">LB — Libéro</option><option value="MDF">MDF — Milieu défensif</option>
+        <option value="MC">MC — Milieu central</option><option value="MD">MD — Milieu droit</option>
+        <option value="MG">MG — Milieu gauche</option><option value="MAD">MAD — Milieu att. droit</option>
+        <option value="MAG">MAG — Milieu att. gauche</option><option value="MAC">MAC — Milieu att. central</option>
+        <option value="AD">AD — Ailier droit</option><option value="AG">AG — Ailier gauche</option>
+        <option value="AV">AV — Avant-centre</option><option value="SS">SS — Second attaquant</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closeModal()">Annuler</button>
+      <button class="btn-primary" onclick="savePlayer()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div style="position:fixed;bottom:28px;right:28px;display:flex;flex-direction:column;gap:10px;z-index:500" class="no-print">
+  <button class="fab" onclick="openPdfPreview()" style="background:var(--surf);color:var(--acc);border:1.5px solid var(--acc);box-shadow:0 4px 16px rgba(26,86,219,.15);font-size:11px">👁 Aperçu PDF</button>
+  <button class="fab" onclick="exportPDF()">↓ Imprimer / PDF</button>
+</div>
+
+<script>
+/* ═══════ SYSTÈMES ═══════ */
+const SYS={
+  '4-3-3':[{p:'GK',x:.5,y:.93},{p:'DD',x:.82,y:.77},{p:'DC',x:.62,y:.74},{p:'DC',x:.38,y:.74},{p:'DG',x:.18,y:.77},{p:'MD',x:.75,y:.52},{p:'MC',x:.5,y:.48},{p:'MG',x:.25,y:.52},{p:'AD',x:.82,y:.22},{p:'AV',x:.5,y:.17},{p:'AG',x:.18,y:.22}],
+  '4-4-2':[{p:'GK',x:.5,y:.93},{p:'DD',x:.82,y:.77},{p:'DC',x:.62,y:.74},{p:'DC',x:.38,y:.74},{p:'DG',x:.18,y:.77},{p:'MD',x:.82,y:.52},{p:'MC',x:.6,y:.52},{p:'MC',x:.4,y:.52},{p:'MG',x:.18,y:.52},{p:'AV',x:.63,y:.22},{p:'AV',x:.37,y:.22}],
+  '4-2-3-1':[{p:'GK',x:.5,y:.93},{p:'DD',x:.82,y:.77},{p:'DC',x:.62,y:.74},{p:'DC',x:.38,y:.74},{p:'DG',x:.18,y:.77},{p:'MDF',x:.62,y:.57},{p:'MDF',x:.38,y:.57},{p:'AD',x:.82,y:.33},{p:'MAC',x:.5,y:.30},{p:'AG',x:.18,y:.33},{p:'AV',x:.5,y:.13}],
+  '3-5-2':[{p:'GK',x:.5,y:.93},{p:'DC',x:.72,y:.75},{p:'DC',x:.5,y:.73},{p:'DC',x:.28,y:.75},{p:'PD',x:.88,y:.50},{p:'MD',x:.70,y:.52},{p:'MC',x:.5,y:.50},{p:'MG',x:.30,y:.52},{p:'PG',x:.12,y:.50},{p:'AV',x:.64,y:.20},{p:'AV',x:.36,y:.20}],
+  '3-4-3':[{p:'GK',x:.5,y:.93},{p:'DC',x:.72,y:.75},{p:'DC',x:.5,y:.73},{p:'DC',x:.28,y:.75},{p:'MD',x:.78,y:.53},{p:'MC',x:.58,y:.52},{p:'MC',x:.42,y:.52},{p:'MG',x:.22,y:.53},{p:'AD',x:.82,y:.22},{p:'AV',x:.5,y:.17},{p:'AG',x:.18,y:.22}],
+  '5-3-2':[{p:'GK',x:.5,y:.93},{p:'PD',x:.88,y:.75},{p:'DC',x:.69,y:.75},{p:'DC',x:.5,y:.73},{p:'DC',x:.31,y:.75},{p:'PG',x:.12,y:.75},{p:'MD',x:.7,y:.50},{p:'MC',x:.5,y:.48},{p:'MG',x:.3,y:.50},{p:'AV',x:.64,y:.20},{p:'AV',x:.36,y:.20}],
+  '4-1-4-1':[{p:'GK',x:.5,y:.93},{p:'DD',x:.82,y:.77},{p:'DC',x:.62,y:.74},{p:'DC',x:.38,y:.74},{p:'DG',x:.18,y:.77},{p:'MDF',x:.5,y:.62},{p:'MD',x:.84,y:.44},{p:'MAD',x:.63,y:.42},{p:'MAC',x:.5,y:.40},{p:'MAG',x:.37,y:.42},{p:'MG',x:.16,y:.44},{p:'AV',x:.5,y:.13}],
+  '4-3-2-1':[{p:'GK',x:.5,y:.93},{p:'DD',x:.82,y:.77},{p:'DC',x:.62,y:.74},{p:'DC',x:.38,y:.74},{p:'DG',x:.18,y:.77},{p:'MD',x:.72,y:.56},{p:'MC',x:.5,y:.54},{p:'MG',x:.28,y:.56},{p:'MAD',x:.65,y:.32},{p:'MAG',x:.35,y:.32},{p:'AV',x:.5,y:.13}],
+  '4-2-2-2':[{p:'GK',x:.5,y:.93},{p:'DD',x:.82,y:.77},{p:'DC',x:.62,y:.74},{p:'DC',x:.38,y:.74},{p:'DG',x:.18,y:.77},{p:'MDF',x:.62,y:.60},{p:'MDF',x:.38,y:.60},{p:'MAD',x:.72,y:.38},{p:'MAG',x:.28,y:.38},{p:'AV',x:.64,y:.18},{p:'AV',x:.36,y:.18}],
+  '3-4-2-1':[{p:'GK',x:.5,y:.93},{p:'DC',x:.72,y:.75},{p:'DC',x:.5,y:.73},{p:'DC',x:.28,y:.75},{p:'PD',x:.88,y:.53},{p:'MC',x:.62,y:.52},{p:'MC',x:.38,y:.52},{p:'PG',x:.12,y:.53},{p:'MAD',x:.65,y:.30},{p:'MAG',x:.35,y:.30},{p:'AV',x:.5,y:.13}]
+};
+
+const players={home:[],away:[]};
+const W=480,H=340,PX=12,TW=W-PX*2,TH=H-PX*2;
+
+function initPlayers(team,sys){
+  players[team]=SYS[sys].map((p,i)=>({pos:p.p,num:i===0?1:i,nom:'',photo:null,cle:false,x:p.x,y:p.y}));
+}
+
+function terrainBg(svg){
+  svg.innerHTML=`<rect width="480" height="340" fill="#1E5631" rx="8"/>
+  <rect x="0" y="0" width="480" height="48" fill="#256B3E" opacity=".5"/>
+  <rect x="0" y="96" width="480" height="48" fill="#256B3E" opacity=".5"/>
+  <rect x="0" y="192" width="480" height="48" fill="#256B3E" opacity=".5"/>
+  <rect x="0" y="288" width="480" height="48" fill="#256B3E" opacity=".5"/>
+  <rect x="12" y="10" width="456" height="320" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1.5" rx="3"/>
+  <line x1="12" y1="170" x2="468" y2="170" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
+  <circle cx="240" cy="170" r="46" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
+  <circle cx="240" cy="170" r="3" fill="rgba(255,255,255,.35)"/>
+  <rect x="130" y="10" width="220" height="62" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
+  <rect x="183" y="10" width="114" height="28" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
+  <rect x="130" y="268" width="220" height="62" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
+  <rect x="183" y="302" width="114" height="28" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
+  <circle cx="240" cy="42" r="3" fill="rgba(255,255,255,.3)"/>
+  <circle cx="240" cy="298" r="3" fill="rgba(255,255,255,.3)"/>
+  <g id="jetons${svg.id==='terrainHome'?'Home':'Away'}"></g>`;
+}
+
+function renderTerrain(team){
+  const svg=document.getElementById(team==='home'?'terrainHome':'terrainAway');
+  terrainBg(svg);
+  const g=document.getElementById('jetons'+(team==='home'?'Home':'Away'));
+  const col=team==='home'?'#15803D':'#B91C1C';
+  const R=19; // plus grand pour tablette
+  players[team].forEach((p,i)=>{
+    const cx=PX+p.x*TW, cy=PX+p.y*TH;
+    const el=document.createElementNS('http://www.w3.org/2000/svg','g');
+    el.style.cursor='pointer';
+    el.addEventListener('click',()=>openModal(team,i));
+    // Ombre portée
+    const sh=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    sh.setAttribute('cx',cx+1);sh.setAttribute('cy',cy+2);sh.setAttribute('r',R);
+    sh.setAttribute('fill','rgba(0,0,0,0.25)');el.appendChild(sh);
+    if(p.photo){
+      const clipId='cl_'+team+'_'+i;
+      const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
+      const cp=document.createElementNS('http://www.w3.org/2000/svg','clipPath');
+      cp.setAttribute('id',clipId);
+      const cc=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      cc.setAttribute('cx',cx);cc.setAttribute('cy',cy);cc.setAttribute('r',R);
+      cp.appendChild(cc);defs.appendChild(cp);g.appendChild(defs);
+      const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx',cx);c.setAttribute('cy',cy);c.setAttribute('r',R);
+      c.setAttribute('fill',col);c.setAttribute('stroke','#fff');c.setAttribute('stroke-width','2');
+      el.appendChild(c);
+      const im=document.createElementNS('http://www.w3.org/2000/svg','image');
+      im.setAttribute('href',p.photo);im.setAttribute('x',cx-R);im.setAttribute('y',cy-R);
+      im.setAttribute('width',R*2+'');im.setAttribute('height',R*2+'');
+      im.setAttribute('clip-path','url(#'+clipId+')');im.setAttribute('preserveAspectRatio','xMidYMid slice');
+      el.appendChild(im);
+    } else {
+      const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx',cx);c.setAttribute('cy',cy);c.setAttribute('r',R);
+      c.setAttribute('fill',col);c.setAttribute('stroke','#fff');c.setAttribute('stroke-width','2');
+      el.appendChild(c);
+      const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x',cx);t.setAttribute('y',cy);t.setAttribute('text-anchor','middle');
+      t.setAttribute('dominant-baseline','central');t.setAttribute('fill','#fff');
+      t.setAttribute('font-size','11');t.setAttribute('font-weight','700');
+      t.setAttribute('font-family','DM Mono,monospace');
+      t.textContent=p.num||(i+1);el.appendChild(t);
+    }
+    // Badge poste
+    const br=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    br.setAttribute('x',cx-14);br.setAttribute('y',cy+R+2);br.setAttribute('width','28');br.setAttribute('height','13');
+    br.setAttribute('rx','4');br.setAttribute('fill','rgba(0,0,0,0.6)');el.appendChild(br);
+    const tp=document.createElementNS('http://www.w3.org/2000/svg','text');
+    tp.setAttribute('x',cx);tp.setAttribute('y',cy+R+9);tp.setAttribute('text-anchor','middle');
+    tp.setAttribute('dominant-baseline','central');tp.setAttribute('fill','#fff');
+    tp.setAttribute('font-size','8');tp.setAttribute('font-weight','700');
+    tp.setAttribute('font-family','Syne,sans-serif');
+    tp.textContent=p.pos;el.appendChild(tp);
+    if(p.nom){
+      const tn=document.createElementNS('http://www.w3.org/2000/svg','text');
+      tn.setAttribute('x',cx);tn.setAttribute('y',cy+R+20);tn.setAttribute('text-anchor','middle');
+      tn.setAttribute('dominant-baseline','central');tn.setAttribute('fill','rgba(255,255,255,0.8)');
+      tn.setAttribute('font-size','8');tn.setAttribute('font-family','DM Sans,sans-serif');
+      tn.textContent=p.nom.split(' ').pop().substring(0,10);el.appendChild(tn);
+    }
+    if(p.cle){
+      const ts=document.createElementNS('http://www.w3.org/2000/svg','text');
+      ts.setAttribute('x',cx+R-4);ts.setAttribute('y',cy-R+4);
+      ts.setAttribute('text-anchor','middle');ts.setAttribute('dominant-baseline','central');
+      ts.setAttribute('fill','#D97706');ts.setAttribute('font-size','12');
+      ts.textContent='★';el.appendChild(ts);
+    }
+    g.appendChild(el);
+  });
+}
+
+function updateTerrain(team){
+  const sys=document.getElementById(team==='home'?'sysHome':'sysAway').value;
+  SYS[sys].forEach((p,i)=>{if(players[team][i]){players[team][i].pos=p.p;players[team][i].x=p.x;players[team][i].y=p.y;}});
+  renderTerrain(team);renderList(team);
+}
+
+function renderList(team){
+  const c=document.getElementById('list'+(team==='home'?'Home':'Away'));
+  const col=team==='home'?'#15803D':'#B91C1C';
+  c.innerHTML=players[team].map((p,i)=>`
+    <div class="joueur-row" onclick="openModal('${team}',${i})">
+      <div class="j-avatar" style="background:${col}22;border-color:${col}44">
+        ${p.photo?`<img src="${p.photo}">`:`<span style="font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:${col}">${p.num||i+1}</span>`}
+      </div>
+      <div class="j-info">
+        <div class="j-nom">${p.nom||'<em style="color:var(--txt3);font-style:normal">Cliquer pour renseigner</em>'}</div>
+        <div class="j-sub">${p.pos}${p.num?' · N°'+p.num:''}</div>
+      </div>
+      <button class="j-star ${p.cle?'on':''}" onclick="event.stopPropagation();toggleCle('${team}',${i})">★</button>
+    </div>`).join('');
+}
+
+/* ═══════ MODAL ═══════ */
+let curT=null,curI=null;
+function openModal(team,idx){
+  curT=team;curI=idx;
+  const p=players[team][idx];
+  document.getElementById('mNum').value=p.num||'';
+  document.getElementById('mNom').value=p.nom||'';
+  document.getElementById('mPoste').value=p.pos;
+  const w=document.getElementById('modalPhotoWrap');
+  w.innerHTML=p.photo?`<img src="${p.photo}"><input type="file" accept="image/*" onchange="loadPlayerPhoto(this)">`:`<span class="ph">Photo<br>joueur</span><input type="file" accept="image/*" onchange="loadPlayerPhoto(this)">`;
+  document.getElementById('modalOverlay').classList.add('on');
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('on');curT=null;curI=null;}
+function loadPlayerPhoto(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    document.getElementById('modalPhotoWrap').innerHTML=`<img src="${e.target.result}"><input type="file" accept="image/*" onchange="loadPlayerPhoto(this)">`;
+    if(curT!==null)players[curT][curI].photo=e.target.result;
+  };r.readAsDataURL(f);
+}
+function savePlayer(){
+  if(curT===null)return;
+  const p=players[curT][curI];
+  p.num=parseInt(document.getElementById('mNum').value)||curI+1;
+  p.nom=document.getElementById('mNom').value.trim();
+  p.pos=document.getElementById('mPoste').value;
+  const img=document.querySelector('#modalPhotoWrap img');
+  if(img)p.photo=img.src;
+  renderTerrain(curT);renderList(curT);closeModal();
+}
+function toggleCle(team,idx){players[team][idx].cle=!players[team][idx].cle;renderTerrain(team);renderList(team);}
+document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('modalOverlay'))closeModal();});
+
+/* ═══════ STATS ═══════ */
+const SL=[{l:'Possession',u:'%'},{l:'Duels gagnés',u:'%'},{l:'Précision passes',u:'%'},{l:'Duels aériens',u:'%'},{l:'Pressing réussi',u:'%'}];
+const CT=[{l:'Tirs'},{l:'Tirs cadrés'},{l:'Corners'},{l:'Fautes commises'},{l:'Hors-jeu'},{l:'Cartons jaunes'},{l:'Cartons rouges'},{l:'Arrêts gardien'}];
+const FR=[{l:'Passes tentées',ph:'Ex: 432 / 387'},{l:'Distance (km)',ph:'Ex: 112 / 108'},{l:'Récupérations',ph:'Ex: 48 / 52'},{l:'Occasions nettes',ph:'Ex: 3 / 2'}];
+
+function buildStats(pid){
+  let h='';
+  SL.forEach((s,i)=>{const id=`sl_${pid}_${i}`;h+=`<div class="stat-card card"><div class="stat-lbl">${s.l}</div><div class="slider-row"><span class="slider-val h" id="${id}_hv">50${s.u}</span><div class="slider-track" style="position:relative"><div class="bar-h" id="${id}_hb" style="width:50%"></div><div class="bar-a" id="${id}_ab" style="width:50%"></div><input type="range" class="pslider" min="0" max="100" value="50" oninput="upSlider('${id}',this.value,'${s.u}')"></div><span class="slider-val a" id="${id}_av">50${s.u}</span></div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--txt3);margin-top:5px;font-family:'Syne',sans-serif;font-weight:600"><span>Dom.</span><span>Ext.</span></div></div>`;});
+  CT.forEach((s,i)=>{const id=`ct_${pid}_${i}`;h+=`<div class="stat-card card"><div class="stat-lbl">${s.l}</div><div class="counter-row"><div class="counter-block"><button class="cnt-btn" onclick="cnt('${id}_h',-1)">−</button><span class="cnt-val h" id="${id}_h">0</span><button class="cnt-btn" onclick="cnt('${id}_h',1)">+</button></div><span class="cnt-sep">·</span><div class="counter-block away"><button class="cnt-btn" onclick="cnt('${id}_a',-1)">−</button><span class="cnt-val a" id="${id}_a">0</span><button class="cnt-btn" onclick="cnt('${id}_a',1)">+</button></div></div></div>`;});
+  FR.forEach((s)=>{h+=`<div class="stat-card card free-stat"><div class="stat-lbl">${s.l}</div><div style="font-size:10px;color:var(--txt3);margin-bottom:3px;font-family:'Syne',sans-serif;font-weight:600">Dom. / Ext.</div><input placeholder="${s.ph}"></div>`;});
+  document.getElementById(pid).innerHTML=h;
+}
+function upSlider(id,val,unit){
+  const v=parseInt(val),o=100-v;
+  document.getElementById(id+'_hv').textContent=v+unit;
+  document.getElementById(id+'_av').textContent=o+unit;
+  document.getElementById(id+'_hb').style.width=v+'%';
+  document.getElementById(id+'_ab').style.width=o+'%';
+}
+function cnt(id,d){const el=document.getElementById(id);el.textContent=Math.max(0,(parseInt(el.textContent)||0)+d);}
+
+/* ═══════ PÉRIODES ═══════ */
+function showPer(btn,pid){
+  document.querySelectorAll('.per-btn').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.per-content').forEach(c=>c.classList.remove('on'));
+  btn.classList.add('on');document.getElementById(pid).classList.add('on');
+}
+
+/* ═══════ PHOTOS ═══════ */
+function addPhoto(cid){
+  const c=document.getElementById(cid);
+  const uid='p'+Math.random().toString(36).slice(2,7);
+  const d=document.createElement('div');d.className='photo-card card';
+  d.innerHTML=`<div class="photo-drop" id="dr_${uid}"><span class="di">⊕</span><span class="dt">Ajouter<br>une photo</span><input type="file" accept="image/*" onchange="loadPhoto(this,'${uid}')"></div><div class="photo-legend" style="display:none" id="lg_${uid}"><input placeholder="Légende de la phase..."></div>`;
+  c.appendChild(d);
+}
+function loadPhoto(input,uid){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const dr=document.getElementById('dr_'+uid),lg=document.getElementById('lg_'+uid);
+    dr.innerHTML=`<img class="photo-preview" src="${e.target.result}"><input type="file" accept="image/*" onchange="loadPhoto(this,'${uid}')" style="position:absolute;inset:0;opacity:0;cursor:pointer">`;
+    dr.style.border='none';dr.style.minHeight='auto';lg.style.display='block';
+  };r.readAsDataURL(f);
+}
+
+/* ═══════ DESSIN ═══════ */
+const DC={canvas:null,ctx:null,tool:'select',color:'#15803D',lw:3,drawing:false,sx:0,sy:0,mx:0,my:0,shapes:[],undo:[],sel:null,drag:false,dox:0,doy:0};
+function initDraw(){
+  DC.canvas=document.getElementById('drawCanvas');
+  const CW=DC.canvas.offsetWidth||1000;
+  DC.canvas.width=CW;DC.canvas.height=Math.round(CW*.58);
+  DC.ctx=DC.canvas.getContext('2d');
+  drawBg();
+  DC.canvas.addEventListener('mousedown',ds);DC.canvas.addEventListener('mousemove',dm);DC.canvas.addEventListener('mouseup',de);DC.canvas.addEventListener('mouseleave',de);
+  DC.canvas.addEventListener('touchstart',e=>{e.preventDefault();ds(e.touches[0]);},{passive:false});
+  DC.canvas.addEventListener('touchmove',e=>{e.preventDefault();dm(e.touches[0]);},{passive:false});
+  DC.canvas.addEventListener('touchend',e=>{e.preventDefault();de(e.changedTouches[0]);},{passive:false});
+}
+function gpos(e){const r=DC.canvas.getBoundingClientRect(),s=DC.canvas.width/r.width;return{x:(e.clientX-r.left)*s,y:(e.clientY-r.top)*s};}
+function drawBg(){
+  const c=DC.ctx,W=DC.canvas.width,H=DC.canvas.height;
+  c.fillStyle='#1E5631';c.beginPath();if(c.roundRect)c.roundRect(0,0,W,H,10);else c.rect(0,0,W,H);c.fill();
+  for(let i=0;i<4;i++){c.fillStyle='rgba(37,107,62,0.5)';c.fillRect(0,i*(H/4),W,H/8);}
+  c.strokeStyle='rgba(255,255,255,.22)';c.lineWidth=1.5;
+  const px=W*.025,py=H*.035,tw=W*.95,th=H*.93;
+  c.strokeRect(px,py,tw,th);
+  c.lineWidth=1;c.beginPath();c.moveTo(px,H/2);c.lineTo(px+tw,H/2);c.stroke();
+  c.beginPath();c.arc(W/2,H/2,W*.095,0,Math.PI*2);c.stroke();
+  c.fillStyle='rgba(255,255,255,.35)';c.beginPath();c.arc(W/2,H/2,4,0,Math.PI*2);c.fill();
+  const spw=tw*.44,sph=th*.17;
+  c.strokeRect(W/2-spw/2,py,spw,sph);c.strokeRect(W/2-spw/2,py+th-sph,spw,sph);
+  const smpw=tw*.22,smph=th*.07;
+  c.strokeRect(W/2-smpw/2,py,smpw,smph);c.strokeRect(W/2-smpw/2,py+th-smph,smpw,smph);
+}
+function ds(e){
+  const{x,y}=gpos(e);DC.sx=x;DC.sy=y;DC.mx=x;DC.my=y;
+  if(DC.tool==='text'){addTxt(x,y);return;}
+  if(DC.tool==='select'){
+    DC.sel=null;DC.drag=false;
+    for(let i=DC.shapes.length-1;i>=0;i--){if(hit(DC.shapes[i],x,y)){DC.sel=i;DC.drag=true;DC.dox=x-(DC.shapes[i].x||0);DC.doy=y-(DC.shapes[i].y||0);break;}}
+    return;
+  }
+  DC.drawing=true;DC.undo.push(JSON.parse(JSON.stringify(DC.shapes)));
+}
+function dm(e){
+  const{x,y}=gpos(e);DC.mx=x;DC.my=y;
+  if(DC.tool==='select'&&DC.drag&&DC.sel!==null){
+    DC.shapes[DC.sel].x=x-DC.dox;DC.shapes[DC.sel].y=y-DC.doy;
+    redraw();return;
+  }
+  if(!DC.drawing)return;
+  redraw();
+  const c=DC.ctx;c.strokeStyle=DC.color;c.fillStyle=DC.color+'44';c.lineWidth=DC.lw;c.lineCap='round';c.lineJoin='round';
+  prev(c,DC.tool,DC.sx,DC.sy,x,y);
+}
+function de(e){
+  if(DC.tool==='select'){DC.drag=false;return;}
+  if(!DC.drawing)return;DC.drawing=false;
+  const{x,y}=gpos(e||{clientX:DC.mx,clientY:DC.my});
+  if(Math.abs(x-DC.sx)<3&&Math.abs(y-DC.sy)<3&&DC.tool!=='jeton')return;
+  DC.shapes.push({type:DC.tool,x:DC.sx,y:DC.sy,ex:x,ey:y,color:DC.color,lw:DC.lw});
+  redraw();
+}
+function prev(c,t,sx,sy,ex,ey){
+  c.save();
+  if(t==='arrow'){drArrow(c,sx,sy,ex,ey);}
+  else if(t==='pass'){drCurve(c,sx,sy,ex,ey);}
+  else if(t==='zone'){c.fillRect(sx,sy,ex-sx,ey-sy);c.strokeRect(sx,sy,ex-sx,ey-sy);}
+  else if(t==='circle'){const r=Math.sqrt((ex-sx)**2+(ey-sy)**2);c.beginPath();c.arc(sx,sy,r,0,Math.PI*2);c.fill();c.stroke();}
+  else if(t==='jeton'){drJeton(c,sx,sy,DC.color);}
+  c.restore();
+}
+function drArrow(c,sx,sy,ex,ey){
+  const a=Math.atan2(ey-sy,ex-sx),l=Math.sqrt((ex-sx)**2+(ey-sy)**2),hl=Math.min(22,l*.35);
+  c.beginPath();c.moveTo(sx,sy);c.lineTo(ex,ey);c.stroke();
+  c.fillStyle=DC.color;c.beginPath();c.moveTo(ex,ey);
+  c.lineTo(ex-hl*Math.cos(a-.42),ey-hl*Math.sin(a-.42));
+  c.lineTo(ex-hl*Math.cos(a+.42),ey-hl*Math.sin(a+.42));c.closePath();c.fill();
+}
+function drCurve(c,sx,sy,ex,ey){
+  const mx=(sx+ex)/2,my=(sy+ey)/2-Math.sqrt((ex-sx)**2+(ey-sy)**2)*.25;
+  c.setLineDash([7,4]);c.beginPath();c.moveTo(sx,sy);c.quadraticCurveTo(mx,my,ex,ey);c.stroke();c.setLineDash([]);
+  const a=Math.atan2(ey-my,ex-mx),hl=16;
+  c.fillStyle=DC.color;c.beginPath();c.moveTo(ex,ey);
+  c.lineTo(ex-hl*Math.cos(a-.45),ey-hl*Math.sin(a-.45));
+  c.lineTo(ex-hl*Math.cos(a+.45),ey-hl*Math.sin(a+.45));c.closePath();c.fill();
+}
+function drJeton(c,cx,cy,col){
+  c.save();c.fillStyle=col;c.strokeStyle='#fff';c.lineWidth=2.5;
+  c.beginPath();c.arc(cx,cy,18,0,Math.PI*2);c.fill();c.stroke();
+  c.fillStyle='#fff';c.font='bold 12px Syne,sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('●',cx,cy);c.restore();
+}
+function redraw(){
+  const c=DC.ctx,cv=DC.canvas;c.clearRect(0,0,cv.width,cv.height);drawBg();
+  DC.shapes.forEach((s,i)=>{
+    c.save();c.strokeStyle=s.color;c.fillStyle=s.color+'44';c.lineWidth=s.lw;c.lineCap='round';c.lineJoin='round';
+    if(s.type==='arrow'){c.fillStyle=s.color;drArrow(c,s.x,s.y,s.ex,s.ey);}
+    else if(s.type==='pass'){c.fillStyle=s.color;drCurve(c,s.x,s.y,s.ex,s.ey);}
+    else if(s.type==='zone'){c.fillRect(s.x,s.y,s.ex-s.x,s.ey-s.y);c.strokeRect(s.x,s.y,s.ex-s.x,s.ey-s.y);}
+    else if(s.type==='circle'){const r=Math.sqrt((s.ex-s.x)**2+(s.ey-s.y)**2);c.beginPath();c.arc(s.x,s.y,r,0,Math.PI*2);c.fill();c.stroke();}
+    else if(s.type==='jeton'){drJeton(c,s.x,s.y,s.color);}
+    else if(s.type==='text'&&s.text){c.fillStyle=s.color;c.font=`bold ${s.lw*5+10}px Syne,sans-serif`;c.textBaseline='top';c.fillText(s.text,s.x,s.y);}
+    if(i===DC.sel){c.strokeStyle='#fff';c.lineWidth=1.5;c.setLineDash([4,3]);const minX=Math.min(s.x,s.ex||s.x)-6,minY=Math.min(s.y,s.ey||s.y)-6,maxX=Math.max(s.x,s.ex||s.x)+6,maxY=Math.max(s.y,s.ey||s.y)+6;c.strokeRect(minX,minY,maxX-minX,maxY-minY);c.setLineDash([]);}
+    c.restore();
+  });
+}
+function hit(s,x,y){const m=16,minX=Math.min(s.x,s.ex||s.x)-m,maxX=Math.max(s.x,s.ex||s.x)+m,minY=Math.min(s.y,s.ey||s.y)-m,maxY=Math.max(s.y,s.ey||s.y)+m;return x>=minX&&x<=maxX&&y>=minY&&y<=maxY;}
+function addTxt(x,y){
+  const inp=document.createElement('input');
+  inp.style.cssText=`position:absolute;left:${x}px;top:${y}px;background:rgba(0,0,0,.65);color:${DC.color};border:1.5px solid ${DC.color};border-radius:5px;padding:5px 10px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;outline:none;z-index:10;min-width:90px`;
+  inp.placeholder='Texte...';
+  DC.canvas.parentElement.style.position='relative';DC.canvas.parentElement.appendChild(inp);inp.focus();
+  inp.addEventListener('keydown',e=>{
+    if(e.key==='Enter'||e.key==='Escape'){
+      if(inp.value.trim()){DC.undo.push(JSON.parse(JSON.stringify(DC.shapes)));DC.shapes.push({type:'text',x,y,text:inp.value.trim(),color:DC.color,lw:DC.lw});redraw();}
+      inp.remove();
+    }
+  });
+  inp.addEventListener('blur',()=>inp.remove());
+}
+function setTool(t){DC.tool=t;DC.sel=null;document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('on'));const el=document.getElementById('tool-'+t);if(el)el.classList.add('on');DC.canvas.style.cursor=t==='select'?'default':t==='text'?'text':'crosshair';}
+function setColor(c,btn){DC.color=c;document.querySelectorAll('.color-btn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
+function drawUndo(){if(DC.undo.length){DC.shapes=DC.undo.pop();redraw();}}
+function drawClear(){DC.undo.push(JSON.parse(JSON.stringify(DC.shapes)));DC.shapes=[];redraw();}
+function exportDrawPNG(){const l=document.createElement('a');l.download='schema_tactique.png';l.href=DC.canvas.toDataURL();l.click();}
+
+/* ═══════ LOGO & SYNC COUVERTURE ═══════ */
+function loadLogo(input,id,team){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const el=document.getElementById(id);
+    el.innerHTML=`<img src="${e.target.result}" alt="logo"><input type="file" accept="image/*" onchange="loadLogo(this,'${id}','${team}')">`;
+    const cvId=team==='home'?'cvLogoH2':'cvLogoA2';
+    const cvEl=document.getElementById(cvId);
+    if(cvEl)cvEl.innerHTML=`<img src="${e.target.result}" style="width:100%;height:100%;object-fit:contain;border-radius:50%">`;
+  };r.readAsDataURL(f);
+}
+function loadCoverLogo(input,id){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();r.onload=e=>{document.getElementById(id).innerHTML=`<img src="${e.target.result}"><input type="file" accept="image/*" onchange="loadCoverLogo(this,'${id}')">`;};r.readAsDataURL(f);
+}
+function syncCover(){
+  const hN=document.getElementById('homeName').value;
+  const aN=document.getElementById('awayName').value;
+  const sH=document.getElementById('sH').value;
+  const sA=document.getElementById('sA').value;
+  ['cvPreviewH'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=hN;});
+  ['cvPreviewA'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=aN;});
+  ['cvPreviewSH'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=sH;});
+  ['cvPreviewSA'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=sA;});
+  const c1=document.getElementById('cvNameH'),c2=document.getElementById('cvNameA');
+  const cs1=document.getElementById('cvSH'),cs2=document.getElementById('cvSA');
+  if(c1)c1.value=hN;if(c2)c2.value=aN;
+  if(cs1)cs1.value=sH;if(cs2)cs2.value=sA;
+}
+function syncCoverField(printId,val,previewId){
+  const el=document.getElementById(printId);if(el)el.value=val;
+  if(previewId){const p=document.getElementById(previewId);if(p)p.textContent=val||'—';}
+  const a=document.getElementById('cpAnalyst');if(printId==='cmAnalyst'&&a)a.textContent=val||'ANALYSTE';
+}
+
+/* ═══════ TABS ═══════ */
+function showTab(id,btn){
+  document.querySelectorAll('.tcontent').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tab-'+id).classList.add('on');
+  btn.classList.add('on');
+  if(id==='dessin'&&!DC.canvas)setTimeout(initDraw,60);
+}
+function addPF(id,type){const d=document.createElement('div');d.className='pf-item';d.innerHTML=`<span class="pf-dot"></span><input placeholder="Ajouter...">`;document.getElementById(id).appendChild(d);}
+
+/* ═══════ APERÇU PDF ═══════ */
+const SECTION_LABELS={
+  'cover':'Page de couverture',
+  'compo':'Compositions & Systèmes',
+  'stats':'Statistiques',
+  'tactique':'Analyse Tactique',
+  'cpa':'CPA & Set Pieces',
+  'dessin':'Schémas Tactiques',
+  'joueurs':'Joueurs Clés',
+  'synthese':'Synthèse & Notation'
+};
+
+function openPdfPreview(){
+  const body=document.getElementById('pdfPreviewBody');
+  body.innerHTML='';
+  // Page couverture
+  const coverClone=buildCoverPreviewPage();
+  const lbl1=document.createElement('div');lbl1.className='preview-page-label';lbl1.textContent='Page 1 — Couverture';
+  body.appendChild(lbl1);body.appendChild(coverClone);
+  // Pages sections
+  const sections=['compo','stats','tactique','cpa','dessin','joueurs','synthese'];
+  sections.forEach((id,idx)=>{
+    const src=document.getElementById('tab-'+id);
+    if(!src)return;
+    const lbl=document.createElement('div');lbl.className='preview-page-label';
+    lbl.textContent=`Page ${idx+2} — ${SECTION_LABELS[id]}`;
+    body.appendChild(lbl);
+    const page=document.createElement('div');page.className='preview-page';
+    // En-tête section
+    const hdr=document.createElement('div');
+    hdr.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:10px 16px 8px;border-bottom:1px solid #e0e0e8;';
+    hdr.innerHTML=`<span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#131520">${SECTION_LABELS[id]}</span><span style="font-family:'DM Mono',monospace;font-size:10px;color:#9AA0B2">${document.getElementById('footerDate').textContent}</span>`;
+    page.appendChild(hdr);
+    // Contenu
+    const wrap=document.createElement('div');wrap.style.cssText='padding:16px;font-size:12px;';
+    const clone=src.cloneNode(true);
+    // Nettoyer les boutons no-print dans l'aperçu
+    clone.querySelectorAll('.no-print,.add-btn,.add-photo-btn,.draw-toolbar,.draw-actions').forEach(el=>el.remove());
+    clone.querySelectorAll('.print-header').forEach(el=>el.style.display='none');
+    clone.style.display='block';clone.style.marginBottom='0';
+    wrap.appendChild(clone);page.appendChild(wrap);
+    body.appendChild(page);
+  });
+  document.getElementById('pdfPreviewOverlay').classList.add('on');
+}
+
+function buildCoverPreviewPage(){
+  const page=document.createElement('div');page.className='preview-page';
+  const bar=document.createElement('div');bar.style.cssText='height:5px;background:#1A56DB;';page.appendChild(bar);
+  const inner=document.createElement('div');inner.style.cssText='padding:28px 32px 24px;';
+  const hN=document.getElementById('homeName')?.value||'Club Domicile';
+  const aN=document.getElementById('awayName')?.value||'Club Extérieur';
+  const sH=document.getElementById('sH')?.value||'0';
+  const sA=document.getElementById('sA')?.value||'0';
+  const date=document.getElementById('cmDate')?.value||'—';
+  const comp=document.getElementById('cmComp')?.value||'—';
+  const lieu=document.getElementById('cmLieu')?.value||'—';
+  const analyst=document.getElementById('cmAnalyst')?.value||'—';
+  inner.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <span style="font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#9AA0B2">Rapport d'Analyse Match</span>
+      <span style="font-family:'Syne',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#1A56DB;background:rgba(26,86,219,.08);padding:3px 10px;border-radius:20px;border:1px solid rgba(26,86,219,.2)">Analyse vidéo football</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;justify-content:center;margin:24px 0">
+      <div style="text-align:center;flex:1">
+        <div style="width:48px;height:48px;border-radius:50%;background:#F5F6F9;border:1px solid #e0e0e8;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#9AA0B2">Logo</div>
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#131520">${hN}</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-family:'Syne',sans-serif;font-size:42px;font-weight:800;color:#131520;line-height:1">${sH} – ${sA}</div>
+        <div style="font-family:'Syne',sans-serif;font-size:10px;color:#9AA0B2;letter-spacing:1px;margin-top:4px">Score final</div>
+      </div>
+      <div style="text-align:center;flex:1">
+        <div style="width:48px;height:48px;border-radius:50%;background:#F5F6F9;border:1px solid #e0e0e8;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#9AA0B2">Logo</div>
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#131520">${aN}</div>
+      </div>
+    </div>
+    <div style="height:1px;background:#e0e0e8;margin:16px 0"></div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:20px">
+      <div><div style="font-family:'Syne',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#9AA0B2">Date</div><div style="font-size:12px;color:#131520;margin-top:2px">${date}</div></div>
+      <div><div style="font-family:'Syne',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#9AA0B2">Compétition</div><div style="font-size:12px;color:#131520;margin-top:2px">${comp}</div></div>
+      <div><div style="font-family:'Syne',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#9AA0B2">Lieu</div><div style="font-size:12px;color:#131520;margin-top:2px">${lieu}</div></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid #e0e0e8;padding-top:12px">
+      <span style="font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#525870">${analyst}</span>
+      <span style="font-family:'DM Mono',monospace;font-size:10px;color:#9AA0B2">${document.getElementById('footerDate').textContent}</span>
+    </div>`;
+  page.appendChild(inner);
+  return page;
+}
+
+function closePdfPreview(){document.getElementById('pdfPreviewOverlay').classList.remove('on');}
+document.getElementById('pdfPreviewOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('pdfPreviewOverlay'))closePdfPreview();});
+
+function doPrint(){
+  closePdfPreview();
+  setTimeout(exportPDF,200);
+}
+
+/* ═══════ EXPORT PDF ═══════ */
+function exportPDF(){
+  document.getElementById('coverPage').style.display='flex';
+  document.querySelectorAll('.tcontent').forEach(t=>{t.style.display='block';t.style.marginBottom='28px';});
+  document.querySelectorAll('.print-header').forEach(h=>h.style.display='flex');
+  window.print();
+  setTimeout(()=>{
+    document.getElementById('coverPage').style.display='none';
+    document.querySelectorAll('.tcontent').forEach(t=>{t.style.display='';t.style.marginBottom='';});
+    document.querySelectorAll('.print-header').forEach(h=>h.style.display='');
+    const active=document.querySelector('.tcontent.on');
+    if(active)active.style.display='block';
+  },1400);
+}
+
+/* ═══════ INIT ═══════ */
+const today=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+document.getElementById('footerDate').textContent=today;
+document.getElementById('coverDate').textContent=today;
+document.getElementById('cpDateFoot').textContent=today;
+
+initPlayers('home','4-3-3');initPlayers('away','4-4-2');
+renderTerrain('home');renderTerrain('away');
+renderList('home');renderList('away');
+
+['sg','sm1','sm2','spr'].forEach(buildStats);
+
+['pg','pm1','pm2','ppr','pt','pc','pd'].forEach(id=>{
+  addPhoto(id);addPhoto(id);addPhoto(id);
+});
+</script>
+</body>
+</html>
