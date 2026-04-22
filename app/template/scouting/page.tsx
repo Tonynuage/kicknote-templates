@@ -36,9 +36,9 @@ function AnalyseMatchContent() {
       await supabase.rpc('decrementer_credit', { p_email: userEmail })
       await supabase.from('kicknote_rapports').insert({
         email: userEmail,
-        template: '',
+        template: 'Recrutement / Scouting',
         couleur,
-        nom_fichier: `-${Date.now()}.pdf`
+        nom_fichier: `scouting-${Date.now()}.pdf`
       })
       setCreditDebite(true)
     }
@@ -82,7 +82,7 @@ function AnalyseMatchContent() {
       {/* Template iframe */}
       <div style={{ paddingTop: '56px' }}>
         <iframe
-          src=""
+          src="/templates/scouting.html"
           style={{ width: '100%', height: 'calc(100vh - 56px)', border: 'none' }}
           title=""
         />
