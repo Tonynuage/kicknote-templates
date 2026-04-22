@@ -10,34 +10,40 @@ function AnalyseMatchContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const couleur = searchParams.get('couleur') || 'sombre'
-  const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState('')
+  const [creditDebite, setCreditDebite] = useState(false)
 
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { router.push('/'); return }
-      setEmail(session.user.email!)
+      const userEmail = session.user.email!
+      setEmail(userEmail)
+
+      // Décrémenter crédit à l'ouverture
+      const { data: cred } = await supabase
+        .from('kicknote_credits')
+        .select('credits_restants')
+        .eq('email', userEmail)
+        .single()
+
+      if (!cred || cred.credits_restants <= 0) {
+        alert('Plus de crédits disponibles. Achetez un pack sur kicknote.fr')
+        router.push('/dashboard')
+        return
+      }
+
+      await supabase.rpc('decrementer_credit', { p_email: userEmail })
+      await supabase.from('kicknote_rapports').insert({
+        email: userEmail,
+        template: 'Analyse de match',
+        couleur,
+        nom_fichier: `analyse-match-${Date.now()}.pdf`
+      })
+      setCreditDebite(true)
     }
     init()
   }, [])
-
-  const genererPDF = async () => {
-    setLoading(true)
-    // Décrémenter crédit
-    await supabase.rpc('decrementer_credit', { p_email: email })
-    // Enregistrer rapport
-    await supabase.from('kicknote_rapports').insert({
-      email,
-      template: 'Analyse de match',
-      couleur,
-      nom_fichier: `analyse-match-${Date.now()}.pdf`
-    })
-    // TODO: générer PDF
-    alert('PDF généré — fonctionnalité en cours de déploiement')
-    setLoading(false)
-    router.push('/dashboard')
-  }
 
   return (
     <div style={{ minHeight: '100vh', background: '#070910', fontFamily: 'Arial, sans-serif' }}>
@@ -51,16 +57,26 @@ function AnalyseMatchContent() {
           <button onClick={() => router.push('/dashboard')} style={{
             background: 'transparent', border: 'none', color: '#8890AA',
             fontSize: '13px', cursor: 'pointer'
-          }}>← Retour</button>
+          }}>← Dashboard</button>
           <span style={{ color: '#F0F2F8', fontSize: '14px', fontWeight: '500' }}>Analyse de match</span>
+          {creditDebite && (
+            <span style={{ fontSize: '11px', color: '#34D399', background: '#34D39911', padding: '3px 8px', borderRadius: '4px' }}>
+              ✓ 1 crédit utilisé
+            </span>
+          )}
         </div>
-        <button onClick={genererPDF} disabled={loading} style={{
-          background: loading ? '#0F6E56' : '#34D399',
-          border: 'none', color: '#070910', fontSize: '13px',
-          fontWeight: '500', padding: '8px 20px', borderRadius: '8px', cursor: 'pointer'
-        }}>
-          {loading ? 'Génération...' : 'Générer PDF — 1 crédit'}
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button onClick={() => {
+            const iframe = document.querySelector('iframe') as HTMLIFrameElement
+            iframe?.contentWindow?.print()
+          }} style={{
+            background: '#34D399', border: 'none', color: '#070910',
+            fontSize: '13px', fontWeight: '500', padding: '8px 20px',
+            borderRadius: '8px', cursor: 'pointer'
+          }}>
+            Sauvegarder en PDF
+          </button>
+        </div>
       </div>
 
       {/* Template iframe */}
